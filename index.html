@@ -33,12 +33,12 @@
         }
 
         /* --- Custom Scrollbar --- */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
 
-        /* --- Scroll Animation Classes (for other sections) --- */
+        /* --- Scroll Animation Classes --- */
         .animate-on-scroll {
             opacity: 0;
             transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -53,13 +53,15 @@
             opacity: 1;
             transform: translate(0, 0) scale(1);
         }
-        .stagger-1 { transition-delay: 0.1s; }
-        .stagger-2 { transition-delay: 0.2s; }
-        .stagger-3 { transition-delay: 0.3s; }
-        .stagger-4 { transition-delay: 0.4s; }
-        .stagger-5 { transition-delay: 0.5s; }
+        .stagger-1 { transition-delay: 0.1s !important; }
+        .stagger-2 { transition-delay: 0.2s !important; }
+        .stagger-3 { transition-delay: 0.3s !important; }
+        .stagger-4 { transition-delay: 0.4s !important; }
+        .stagger-5 { transition-delay: 0.5s !important; }
+        .stagger-6 { transition-delay: 0.6s !important; }
+        .stagger-7 { transition-delay: 0.7s !important; }
 
-        /* --- Hover Effects (excluding skills tags now) --- */
+        /* --- Hover Effects --- */
         nav .desktop-nav a { transition: color 0.3s ease; }
         nav .desktop-nav a:hover { color: #2563eb; }
         nav .mobile-nav a { transition: background-color 0.2s ease; }
@@ -103,55 +105,135 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
-
         .skills-marquee-container {
-            width: 100%;
-            overflow: hidden;
-            position: relative;
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
+            width: 100%; overflow: hidden; position: relative;
+            padding-top: 0.5rem; padding-bottom: 0.5rem;
             -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
             mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
         }
-
         .skills-marquee-inner {
-            display: flex;
-            width: fit-content;
-            white-space: nowrap;
-            /* Animation properties - Increased duration from 35s to 50s */
+            display: flex; width: fit-content; white-space: nowrap;
             animation: marquee-scroll 50s linear infinite;
             will-change: transform;
         }
-
-        .skills-marquee-container:hover .skills-marquee-inner {
-            animation-play-state: paused;
-        }
-
+        .skills-marquee-container:hover .skills-marquee-inner { animation-play-state: paused; }
         .skills-marquee-inner .skill-tag {
-            margin-right: 0.75rem;
-            flex-shrink: 0;
-             transition: transform 0.2s ease;
+            margin-right: 0.75rem; flex-shrink: 0; transition: transform 0.2s ease;
         }
-         .skills-marquee-inner .skill-tag:hover {
-             transform: scale(1.1);
-         }
-
+        .skills-marquee-inner .skill-tag:hover { transform: scale(1.1); }
         @media (prefers-reduced-motion: reduce) {
             .skills-marquee-inner {
-                animation: none;
-                white-space: normal;
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: center;
+                animation: none; white-space: normal; display: flex;
+                flex-wrap: wrap; justify-content: center;
             }
-             .skills-marquee-container {
-                 -webkit-mask-image: none;
-                 mask-image: none;
-             }
-             .skills-marquee-inner > div[aria-hidden="true"] {
-                 display: none;
-             }
+            .skills-marquee-container { -webkit-mask-image: none; mask-image: none; }
+            .skills-marquee-inner > div[aria-hidden="true"] { display: none; }
         }
+
+        /* --- Horizontal Interactive Timeline Styles --- */
+        .timeline-outer-container { /* Added outer container for positioning arrows */
+             position: relative;
+        }
+        .timeline-container-horizontal {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 2rem 0 4rem 0;
+            position: relative;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .timeline-container-horizontal::-webkit-scrollbar { display: none; }
+        .timeline-wrapper {
+            display: inline-flex;
+            align-items: flex-start;
+            padding: 0 1rem;
+            position: relative;
+            min-width: 100%;
+        }
+        .timeline-wrapper::before {
+            content: ''; position: absolute; bottom: 1.5rem; left: 0;
+            height: 4px; width: 100%; background-color: #d1d5db;
+            border-radius: 2px; z-index: 5;
+        }
+        .timeline-item-horizontal {
+            position: relative; flex: 0 0 auto; width: 300px;
+            margin-right: 2rem; padding-bottom: 3rem; text-align: left;
+        }
+        .timeline-item-horizontal:last-child { margin-right: 1rem; }
+        .timeline-item-horizontal::before {
+            content: ''; position: absolute; left: 50%; bottom: calc(1.5rem - 8px);
+            transform: translateX(-50%); height: 16px; width: 16px;
+            background-color: #60a5fa; border: 3px solid #bfdbfe;
+            border-radius: 50%; z-index: 10;
+        }
+        .timeline-summary {
+            cursor: pointer; padding: 1rem; background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            transition: box-shadow 0.3s ease; position: relative;
+            border: 1px solid #e5e7eb; width: 100%;
+        }
+        .timeline-summary:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .timeline-summary .arrow { transition: transform 0.3s ease-out; display: inline-block; }
+        .timeline-summary.active .arrow { transform: rotate(90deg); }
+        .timeline-details {
+            overflow: hidden; max-height: 0; opacity: 0;
+            transition: max-height 0.5s ease-out, opacity 0.3s ease-out, margin-top 0.5s ease-out, padding 0.5s ease-out;
+            margin-top: 0; padding: 0 1rem; background-color: #f9fafb;
+            border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
+            border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;
+            width: 100%;
+        }
+        .timeline-details.active { max-height: 1000px; opacity: 1; margin-top: -1px; padding: 1rem; }
+
+        /* Timeline Scroll Arrows */
+        .timeline-scroll-arrow {
+            position: absolute;
+            top: 40%; /* Adjust vertical position */
+            transform: translateY(-50%);
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            padding: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: opacity 0.3s ease, transform 0.2s ease;
+            opacity: 0; /* Hidden by default */
+            pointer-events: none; /* Disable clicks when hidden */
+        }
+        .timeline-scroll-arrow.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .timeline-scroll-arrow:hover {
+            background-color: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+        .timeline-scroll-arrow svg {
+            width: 1.5rem; /* 24px */
+            height: 1.5rem;
+            stroke: #3b82f6; /* blue-500 */
+        }
+        #scroll-left-button { left: 0.5rem; }
+        #scroll-right-button { right: 0.5rem; }
+
+        /* Arrow pulse animation */
+        @keyframes pulse-horizontal {
+            0%, 100% { transform: translateY(-50%) translateX(0); }
+            50% { transform: translateY(-50%) translateX(var(--pulse-offset, 4px)); }
+        }
+        #scroll-right-button.visible {
+             --pulse-offset: 4px;
+             animation: pulse-horizontal 1.5s ease-in-out infinite;
+        }
+         #scroll-left-button.visible {
+             --pulse-offset: -4px;
+              animation: pulse-horizontal 1.5s ease-in-out infinite;
+         }
+         @media (prefers-reduced-motion: reduce) {
+             .timeline-scroll-arrow { animation: none !important; }
+         }
 
     </style>
 </head>
@@ -224,84 +306,141 @@
             <div class="container mx-auto">
                 <h2 class="section-title text-4xl font-bold text-center text-gray-800 mb-16 animate-on-scroll fade-in-down">Resume</h2>
 
-                <div class="mb-16">
-                    <h3 class="text-3xl font-semibold text-gray-700 mb-8 border-l-4 border-blue-500 pl-4 animate-on-scroll fade-in-left">Experience</h3>
-                    <div class="space-y-10">
-                        <div class="bg-white p-6 rounded-lg shadow-sm animate-on-scroll fade-in-right stagger-1">
-                            <h4 class="text-xl font-semibold text-gray-800">Principal DevOps Engineer</h4>
-                            <p class="text-gray-600 font-medium">Raytheon | April 2024 - Present</p>
-                            <ul class="mt-3 list-disc list-inside text-gray-600 space-y-1">
-                                <li>Architected, maintained, and optimized CI/CD pipelines (Jenkins, Bitbucket CI), reducing deployment time by 20%.</li>
-                                <li>Led support and integration of development environments using Ansible and containerization (PostgreSQL, Jenkins, Atlassian tools, Matlab, Ollama, Coverity).</li>
-                                <li>Managed code repositories (GitLab, ClearCase, Bitbucket) with Artifactory.</li>
-                                <li>Administered and optimized Linux infrastructure (RHEL) with Docker, Apache, Tomcat, Anaconda, improving response times by 15%.</li>
-                                <li>Automated infrastructure changes using Ansible and cron jobs, reducing manual effort by 30%.</li>
-                            </ul>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow-sm animate-on-scroll fade-in-right stagger-2">
-                            <h4 class="text-xl font-semibold text-gray-800">Senior Linux Systems Administrator</h4>
-                            <p class="text-gray-600 font-medium">Raytheon | Sept. 2022 - April 2024</p>
-                            <ul class="mt-3 list-disc list-inside text-gray-600 space-y-1">
-                                <li>Maintained and secured RHEL systems, ensuring compliance and high availability.</li>
-                                <li>Automated system admin tasks (antivirus, Splunk forwarders, config) with Ansible, improving efficiency by 25%.</li>
-                                <li>Collaborated with teams to troubleshoot RHEL systems.</li>
-                            </ul>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow-sm animate-on-scroll fade-in-right stagger-3">
-                            <h4 class="text-xl font-semibold text-gray-800">Surface Ships Software Infra Systems Engineer II</h4>
-                            <p class="text-gray-600 font-medium">General Dynamics Mission Systems | May 2022 - Sept. 2022</p>
-                            <ul class="mt-3 list-disc list-inside text-gray-600 space-y-1">
-                                <li>Supported and integrated software infrastructure into surface ship systems.</li>
-                                <li>Developed technical documentation and software packages (Ansible, Bash, PowerShell).</li>
-                                <li>Managed version control with Git.</li>
-                                <li>Performed software testing and configuration verification.</li>
-                                <li>Applied Agile methodologies.</li>
-                            </ul>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow-sm animate-on-scroll fade-in-right stagger-4">
-                            <h4 class="text-xl font-semibold text-gray-800">Surface Ships Software Infra Systems Engineer I</h4>
-                            <p class="text-gray-600 font-medium">General Dynamics Mission Systems | June 2020 - May 2022</p>
-                            <ul class="mt-3 list-disc list-inside text-gray-600 space-y-1">
-                                <li>Supported and integrated software infrastructure for surface ship systems.</li>
-                                <li>Developed documentation and scripts for software configuration/installation.</li>
-                                <li>Conducted software testing.</li>
-                            </ul>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow-sm animate-on-scroll fade-in-right stagger-5">
-                            <h4 class="text-xl font-semibold text-gray-800">Surface Ships Systems Intern Engineer</h4>
-                            <p class="text-gray-600 font-medium">General Dynamics Mission Systems | March 2020 - June 2020</p>
-                            <ul class="mt-3 list-disc list-inside text-gray-600 space-y-1">
-                                <li>Conducted peer reviews of technical documentation.</li>
-                                <li>Tested documentation and software packages against standards.</li>
-                            </ul>
+                <div class="timeline-outer-container">
+                    <div id="timeline-scroll-container" class="timeline-container-horizontal">
+                        <div class="timeline-wrapper">
+                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up">
+                                <div class="timeline-content">
+                                    <div class="timeline-summary" data-target-details="details-job-1" aria-expanded="false" aria-controls="details-job-1">
+                                        <h4 class="text-lg font-semibold text-gray-800">Principal DevOps Engineer</h4>
+                                        <p class="text-xs text-gray-500 font-medium mb-1">Raytheon | Apr 2024 - Present</p>
+                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
+                                        <span class="text-xs text-gray-600">Details</span>
+                                    </div>
+                                    <div id="details-job-1" class="timeline-details">
+                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                            <li>Architected, maintained, and optimized CI/CD pipelines (Jenkins, Bitbucket CI), reducing deployment time by 20%.</li>
+                                            <li>Led support and integration of development environments using Ansible and containerization (PostgreSQL, Jenkins, Atlassian tools, Matlab, Ollama, Coverity).</li>
+                                            <li>Managed code repositories (GitLab, ClearCase, Bitbucket) with Artifactory.</li>
+                                            <li>Administered and optimized Linux infrastructure (RHEL) with Docker, Apache, Tomcat, Anaconda, improving response times by 15%.</li>
+                                            <li>Automated infrastructure changes using Ansible and cron jobs, reducing manual effort by 30%.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-1">
+                                <div class="timeline-content">
+                                    <div class="timeline-summary" data-target-details="details-job-2" aria-expanded="false" aria-controls="details-job-2">
+                                        <h4 class="text-lg font-semibold text-gray-800">Senior Linux Systems Admin</h4>
+                                        <p class="text-xs text-gray-500 font-medium mb-1">Raytheon | Sep 2022 - Apr 2024</p>
+                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
+                                        <span class="text-xs text-gray-600">Details</span>
+                                    </div>
+                                    <div id="details-job-2" class="timeline-details">
+                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                            <li>Maintained and secured RHEL systems, ensuring compliance and high availability.</li>
+                                            <li>Automated system admin tasks (antivirus, Splunk forwarders, config) with Ansible, improving efficiency by 25%.</li>
+                                            <li>Collaborated with teams to troubleshoot RHEL systems.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-2">
+                                <div class="timeline-content">
+                                    <div class="timeline-summary" data-target-details="details-job-3" aria-expanded="false" aria-controls="details-job-3">
+                                        <h4 class="text-lg font-semibold text-gray-800">Systems Engineer II</h4>
+                                        <p class="text-xs text-gray-500 font-medium mb-1">GD Mission Systems | May 2022 - Sep 2022</p>
+                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
+                                        <span class="text-xs text-gray-600">Details</span>
+                                    </div>
+                                    <div id="details-job-3" class="timeline-details">
+                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                            <li>Supported and integrated software infrastructure into surface ship systems.</li>
+                                            <li>Developed technical documentation and software packages (Ansible, Bash, PowerShell).</li>
+                                            <li>Managed version control with Git.</li>
+                                            <li>Performed software testing and configuration verification.</li>
+                                            <li>Applied Agile methodologies.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-3">
+                                <div class="timeline-content">
+                                    <div class="timeline-summary" data-target-details="details-job-4" aria-expanded="false" aria-controls="details-job-4">
+                                        <h4 class="text-lg font-semibold text-gray-800">Systems Engineer I</h4>
+                                        <p class="text-xs text-gray-500 font-medium mb-1">GD Mission Systems | Jun 2020 - May 2022</p>
+                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
+                                        <span class="text-xs text-gray-600">Details</span>
+                                    </div>
+                                    <div id="details-job-4" class="timeline-details">
+                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                            <li>Supported and integrated software infrastructure for surface ship systems.</li>
+                                            <li>Developed documentation and scripts for software configuration/installation.</li>
+                                            <li>Conducted software testing.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-4">
+                                <div class="timeline-content">
+                                    <div class="timeline-summary" data-target-details="details-job-5" aria-expanded="false" aria-controls="details-job-5">
+                                        <h4 class="text-lg font-semibold text-gray-800">Intern Engineer</h4>
+                                        <p class="text-xs text-gray-500 font-medium mb-1">GD Mission Systems | Mar 2020 - Jun 2020</p>
+                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
+                                        <span class="text-xs text-gray-600">Details</span>
+                                    </div>
+                                    <div id="details-job-5" class="timeline-details">
+                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                            <li>Conducted peer reviews of technical documentation.</li>
+                                            <li>Tested documentation and software packages against standards.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-5">
+                                <div class="timeline-content">
+                                    <div class="timeline-summary" data-target-details="details-edu-1" aria-expanded="false" aria-controls="details-edu-1">
+                                        <h4 class="text-lg font-semibold text-gray-800">Education</h4>
+                                        <p class="text-xs text-gray-500 font-medium mb-1">Westfield State University | 2014 - 2020</p>
+                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
+                                        <span class="text-xs text-gray-600">Details</span>
+                                    </div>
+                                    <div id="details-edu-1" class="timeline-details">
+                                        <ul class="mt-2 list-none text-gray-600 space-y-1 text-sm">
+                                            <li>B.S. Computer Science (2016 - 2020)</li>
+                                            <li>B.S. Criminal Justice (2014 - 2020)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-6">
+                                <div class="timeline-content">
+                                    <div class="timeline-summary" data-target-details="details-certs-1" aria-expanded="false" aria-controls="details-certs-1">
+                                        <h4 class="text-lg font-semibold text-gray-800">Certs & Clearance</h4>
+                                        <p class="text-xs text-gray-500 font-medium mb-1">2020 - Present</p>
+                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
+                                        <span class="text-xs text-gray-600">Details</span>
+                                    </div>
+                                    <div id="details-certs-1" class="timeline-details">
+                                        <ul class="mt-2 list-none text-gray-600 space-y-1 text-sm">
+                                            <li>CompTIA Security+ (Valid: 2024 - 2027)</li>
+                                            <li>Security Clearance: Secret (Valid: 2020 - 2030)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <button id="scroll-left-button" aria-label="Scroll timeline left" class="timeline-scroll-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button id="scroll-right-button" aria-label="Scroll timeline right" class="timeline-scroll-arrow">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
                 </div>
 
-                <div class="mb-16">
-                    <h3 class="text-3xl font-semibold text-gray-700 mb-8 border-l-4 border-blue-500 pl-4 animate-on-scroll fade-in-left">Education</h3>
-                    <div class="bg-white p-6 rounded-lg shadow-sm animate-on-scroll fade-in-right stagger-1">
-                        <h4 class="text-xl font-semibold text-gray-800">Westfield State University</h4>
-                        <p class="text-gray-600">B.S. Computer Science | 2016 - 2020</p>
-                        <p class="text-gray-600">B.S. Criminal Justice | 2014 - 2020</p>
-                    </div>
-                </div>
-
-                <div class="mb-16">
-                    <h3 class="text-3xl font-semibold text-gray-700 mb-8 border-l-4 border-blue-500 pl-4 animate-on-scroll fade-in-left">Certifications & Clearance</h3>
-                    <div class="bg-white p-6 rounded-lg shadow-sm grid md:grid-cols-2 gap-6 animate-on-scroll fade-in-right stagger-1">
-                        <div>
-                            <h4 class="text-lg font-semibold text-gray-800">CompTIA Security+</h4>
-                            <p class="text-gray-600">Valid: 2024 - 2027</p>
-                        </div>
-                        <div>
-                            <h4 class="text-lg font-semibold text-gray-800">Security Clearance</h4>
-                            <p class="text-gray-600">Secret | Valid: 2020 - 2030</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
+                <div class="mt-16">
                     <h3 class="text-3xl font-semibold text-gray-700 mb-8 border-l-4 border-blue-500 pl-4 animate-on-scroll fade-in-left">Professional Skills</h3>
                     <div class="skills-marquee-container">
                          <div class="skills-marquee-inner">
@@ -445,41 +584,113 @@
             });
         });
 
+        // --- Interactive Timeline ---
+        const timelineSummaries = document.querySelectorAll('.timeline-summary');
+        const timelineContainer = document.getElementById('timeline-scroll-container');
+        const scrollLeftButton = document.getElementById('scroll-left-button');
+        const scrollRightButton = document.getElementById('scroll-right-button');
+
+        timelineSummaries.forEach(summary => {
+            summary.addEventListener('click', () => {
+                const targetId = summary.getAttribute('data-target-details');
+                const detailsElement = document.getElementById(targetId);
+                const timelineItem = summary.closest('.timeline-item-horizontal');
+
+                if (detailsElement && timelineItem) {
+                    // Close other open items
+                    timelineSummaries.forEach(otherSummary => {
+                        if (otherSummary !== summary && otherSummary.classList.contains('active')) {
+                            otherSummary.classList.remove('active');
+                            otherSummary.setAttribute('aria-expanded', 'false');
+                            const otherDetailsId = otherSummary.getAttribute('data-target-details');
+                            document.getElementById(otherDetailsId)?.classList.remove('active');
+                        }
+                    });
+
+                    // Toggle clicked item
+                    const isOpening = !summary.classList.contains('active');
+                    summary.classList.toggle('active');
+                    summary.setAttribute('aria-expanded', isOpening ? 'true' : 'false');
+                    detailsElement.classList.toggle('active');
+
+                    // Scroll the container to center the clicked item
+                    if (isOpening && timelineItem && timelineContainer) {
+                         const containerRect = timelineContainer.getBoundingClientRect();
+                         const itemRect = timelineItem.getBoundingClientRect();
+                         const scrollLeft = timelineContainer.scrollLeft + (itemRect.left - containerRect.left) - (containerRect.width / 2) + (itemRect.width / 2);
+                         timelineContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+                    }
+                }
+            });
+        });
+
+        // --- Timeline Scroll Arrows Logic ---
+        function updateTimelineArrows() {
+            if (!timelineContainer || !scrollLeftButton || !scrollRightButton) return;
+
+            const scrollLeft = timelineContainer.scrollLeft;
+            const scrollWidth = timelineContainer.scrollWidth;
+            const clientWidth = timelineContainer.clientWidth;
+            const scrollThreshold = 10; // Small threshold
+
+            // Left Arrow Visibility
+            if (scrollLeft > scrollThreshold) {
+                scrollLeftButton.classList.add('visible');
+            } else {
+                scrollLeftButton.classList.remove('visible');
+            }
+
+            // Right Arrow Visibility
+            if (scrollLeft < scrollWidth - clientWidth - scrollThreshold) {
+                scrollRightButton.classList.add('visible');
+            } else {
+                scrollRightButton.classList.remove('visible');
+            }
+        }
+
+        if (timelineContainer && scrollLeftButton && scrollRightButton) {
+            // Scroll button click handlers
+            scrollLeftButton.addEventListener('click', () => {
+                const scrollAmount = timelineContainer.clientWidth * 0.7; // Scroll by 70% of visible width
+                timelineContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            });
+
+            scrollRightButton.addEventListener('click', () => {
+                const scrollAmount = timelineContainer.clientWidth * 0.7;
+                timelineContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            });
+
+            // Update arrows on scroll
+            timelineContainer.addEventListener('scroll', updateTimelineArrows);
+
+            // Update arrows on resize
+            window.addEventListener('resize', updateTimelineArrows);
+
+            // Initial check
+             // Use setTimeout to ensure layout is calculated after initial render
+            setTimeout(updateTimelineArrows, 100);
+        }
+
+
         // --- Intersection Observer for Scroll Animations ---
         const observerOptions = { root: null, rootMargin: '0px 0px -50px 0px', threshold: 0 };
         const observerCallback = (entries, observer) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    const childrenToStagger = entry.target.querySelectorAll('[class*="stagger-"]');
-                    if (childrenToStagger.length > 0) {
-                        childrenToStagger.forEach(child => {
-                             if (child.classList.contains('animate-on-scroll')) { child.classList.add('is-visible'); }
-                             else { child.querySelectorAll('.animate-on-scroll').forEach(grandchild => { grandchild.classList.add('is-visible'); }); }
-                        });
+                    const target = entry.target;
+                    target.classList.add('is-visible');
+                    if (!target.classList.contains('timeline-item-horizontal') && !target.classList.contains('section-title')) {
+                         observer.unobserve(target);
                     }
-                    if (entry.target.classList.contains('section-title')) { entry.target.classList.add('is-visible'); }
-                    observer.unobserve(entry.target);
                 }
             });
         };
         const observer = new IntersectionObserver(observerCallback, observerOptions);
-        const elementsToObserve = document.querySelectorAll('.animate-on-scroll, .section-title');
-        const observedElements = new Set();
-        elementsToObserve.forEach(el => {
-            let targetElement = el;
-             if (el.querySelectorAll('[class*="stagger-"]').length > 0) {
-                const animatedAncestor = el.closest('.animate-on-scroll');
-                if (animatedAncestor) { targetElement = animatedAncestor; }
-            } else if (el.matches('[class*="stagger-"]')) {
-                 const animatedParent = el.closest('.animate-on-scroll');
-                 if (animatedParent) { targetElement = animatedParent; }
-            }
-            if (!observedElements.has(targetElement)) {
-                observer.observe(targetElement);
-                observedElements.add(targetElement);
-            }
-        });
+        const elementsToObserve = document.querySelectorAll('.animate-on-scroll:not(.timeline-details)');
+        elementsToObserve.forEach(el => { observer.observe(el); });
+        const sectionTitles = document.querySelectorAll('.section-title');
+        sectionTitles.forEach(title => { observer.observe(title); });
+
     </script>
 
 </body>
