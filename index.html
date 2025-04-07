@@ -31,6 +31,9 @@
             color: #1f2937; /* gray-800 */
             overflow-x: hidden;
         }
+        body.modal-open {
+             overflow: hidden; /* Prevent background scroll when modal is open */
+        }
 
         /* --- Custom Scrollbar --- */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -130,26 +133,17 @@
             .skills-marquee-inner > div[aria-hidden="true"] { display: none; }
         }
 
-        /* --- Horizontal Interactive Timeline Styles --- */
-        .timeline-outer-container { /* Added outer container for positioning arrows */
-             position: relative;
-        }
+        /* --- Horizontal Timeline Styles --- */
+        .timeline-outer-container { position: relative; }
         .timeline-container-horizontal {
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 2rem 0 4rem 0;
-            position: relative;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+            width: 100%; overflow-x: auto; overflow-y: hidden;
+            padding: 2rem 0 4rem 0; position: relative;
+            -ms-overflow-style: none; scrollbar-width: none;
         }
         .timeline-container-horizontal::-webkit-scrollbar { display: none; }
         .timeline-wrapper {
-            display: inline-flex;
-            align-items: flex-start;
-            padding: 0 1rem;
-            position: relative;
-            min-width: 100%;
+            display: inline-flex; align-items: flex-start;
+            padding: 0 1rem; position: relative; min-width: 100%;
         }
         .timeline-wrapper::before {
             content: ''; position: absolute; bottom: 1.5rem; left: 0;
@@ -175,65 +169,73 @@
             border: 1px solid #e5e7eb; width: 100%;
         }
         .timeline-summary:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
-        .timeline-summary .arrow { transition: transform 0.3s ease-out; display: inline-block; }
-        .timeline-summary.active .arrow { transform: rotate(90deg); }
-        .timeline-details {
-            overflow: hidden; max-height: 0; opacity: 0;
-            transition: max-height 0.5s ease-out, opacity 0.3s ease-out, margin-top 0.5s ease-out, padding 0.5s ease-out;
-            margin-top: 0; padding: 0 1rem; background-color: #f9fafb;
-            border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
-            border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb;
-            width: 100%;
-        }
-        .timeline-details.active { max-height: 1000px; opacity: 1; margin-top: -1px; padding: 1rem; }
 
-        /* Timeline Scroll Arrows */
-        .timeline-scroll-arrow {
-            position: absolute;
-            top: 40%; /* Adjust vertical position */
-            transform: translateY(-50%);
-            z-index: 20;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 50%;
-            padding: 0.5rem;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: opacity 0.3s ease, transform 0.2s ease;
-            opacity: 0; /* Hidden by default */
-            pointer-events: none; /* Disable clicks when hidden */
+        /* --- Timeline Modal Styles --- */
+        #timeline-modal {
+            position: fixed; inset: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: center;
+            /* Slightly darker overlay + less blur */
+            background-color: rgba(31, 41, 55, 0.5); /* gray-800/50 */
+            backdrop-filter: blur(4px); /* Reduced blur */
+            -webkit-backdrop-filter: blur(4px); /* Safari */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-out;
         }
-        .timeline-scroll-arrow.visible {
+        #timeline-modal.active {
             opacity: 1;
             pointer-events: auto;
         }
-        .timeline-scroll-arrow:hover {
+        #modal-content-container {
+            position: relative;
             background-color: white;
-            transform: translateY(-50%) scale(1.1);
+            padding: 2rem; /* p-8 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); /* shadow-2xl */
+            margin: auto;
+            max-width: 36rem; /* max-w-xl - Even Smaller Size */
+            width: 91.666667%; /* w-11/12 */
+            max-height: 85vh;
+            overflow-y: auto;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            will-change: transform, opacity;
         }
-        .timeline-scroll-arrow svg {
-            width: 1.5rem; /* 24px */
-            height: 1.5rem;
-            stroke: #3b82f6; /* blue-500 */
+        #timeline-modal.active #modal-content-container {
+             opacity: 1;
+             transform: scale(1);
         }
+        #modal-details-content ul { margin-top: 1rem; padding-left: 1rem; }
+        #modal-details-content li { margin-bottom: 0.5rem; line-height: 1.6; }
+        #modal-close-button {
+            position: absolute; top: 0.75rem; right: 0.75rem;
+            padding: 0.5rem; background-color: #f3f4f6; border-radius: 50%;
+            line-height: 1; color: #4b5563; transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        #modal-close-button:hover { background-color: #e5e7eb; color: #1f2937; }
+
+
+        /* Timeline Scroll Arrows */
+        .timeline-scroll-arrow {
+            position: absolute; top: 40%; transform: translateY(-50%); z-index: 20;
+            background-color: rgba(255, 255, 255, 0.8); border-radius: 50%;
+            padding: 0.5rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: opacity 0.3s ease, transform 0.2s ease;
+            opacity: 0; pointer-events: none;
+        }
+        .timeline-scroll-arrow.visible { opacity: 1; pointer-events: auto; }
+        .timeline-scroll-arrow:hover { background-color: white; transform: translateY(-50%) scale(1.1); }
+        .timeline-scroll-arrow svg { width: 1.5rem; height: 1.5rem; stroke: #3b82f6; }
         #scroll-left-button { left: 0.5rem; }
         #scroll-right-button { right: 0.5rem; }
-
-        /* Arrow pulse animation */
         @keyframes pulse-horizontal {
             0%, 100% { transform: translateY(-50%) translateX(0); }
             50% { transform: translateY(-50%) translateX(var(--pulse-offset, 4px)); }
         }
-        #scroll-right-button.visible {
-             --pulse-offset: 4px;
-             animation: pulse-horizontal 1.5s ease-in-out infinite;
-        }
-         #scroll-left-button.visible {
-             --pulse-offset: -4px;
-              animation: pulse-horizontal 1.5s ease-in-out infinite;
-         }
-         @media (prefers-reduced-motion: reduce) {
-             .timeline-scroll-arrow { animation: none !important; }
-         }
+        #scroll-right-button.visible { --pulse-offset: 4px; animation: pulse-horizontal 1.5s ease-in-out infinite; }
+        #scroll-left-button.visible { --pulse-offset: -4px; animation: pulse-horizontal 1.5s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .timeline-scroll-arrow { animation: none !important; } }
 
     </style>
 </head>
@@ -267,7 +269,7 @@
 
         <section id="home" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-6 py-20 overflow-hidden">
             <div class="text-center max-w-3xl">
-                <img src="1718591380371.jpg" alt="Peter Aldrich Jr profile picture" class="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover mx-auto mb-8 border-4 border-white shadow-lg animate-on-scroll zoom-in" onerror="this.onerror=null; this.src='https://placehold.co/200x200/EBF4FF/1F2937?text=PA';">
+                <img src="https://github.com/KompPsy/komppsy.github.io/blob/main/1718591380371.jpg" alt="Peter Aldrich Jr profile picture" class="w-48 h-48 md:w-56 md:h-56 rounded-full object-cover mx-auto mb-8 border-4 border-white shadow-lg animate-on-scroll zoom-in" onerror="this.onerror=null; this.src='https://placehold.co/200x200/EBF4FF/1F2937?text=PA';">
                 <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-4 animate-on-scroll fade-in-down stagger-1">Peter Aldrich Jr</h1>
                 <p class="text-xl md:text-2xl text-gray-700 mb-8 animate-on-scroll fade-in-up stagger-2">DevOps Engineer with a passion for AI and infrastructure.</p>
                 <p class="text-lg text-gray-600 animate-on-scroll fade-in-up stagger-3">Seeking to leverage expertise and enthusiasm for cutting-edge technologies in a dynamic role. Committed to continuous learning and driving innovation to achieve impactful results.</p>
@@ -311,14 +313,13 @@
                         <div class="timeline-wrapper">
                             <div class="timeline-item-horizontal animate-on-scroll fade-in-up">
                                 <div class="timeline-content">
-                                    <div class="timeline-summary" data-target-details="details-job-1" aria-expanded="false" aria-controls="details-job-1">
+                                    <div class="timeline-summary" data-target-details="details-job-1">
                                         <h4 class="text-lg font-semibold text-gray-800">Principal DevOps Engineer</h4>
                                         <p class="text-xs text-gray-500 font-medium mb-1">Raytheon | Apr 2024 - Present</p>
-                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
-                                        <span class="text-xs text-gray-600">Details</span>
+                                        <span class="text-xs text-blue-600 hover:underline">View Details</span>
                                     </div>
-                                    <div id="details-job-1" class="timeline-details">
-                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                    <div id="details-job-1" class="hidden">
+                                        <ul class="list-disc list-inside space-y-1 text-sm">
                                             <li>Architected, maintained, and optimized CI/CD pipelines (Jenkins, Bitbucket CI), reducing deployment time by 20%.</li>
                                             <li>Led support and integration of development environments using Ansible and containerization (PostgreSQL, Jenkins, Atlassian tools, Matlab, Ollama, Coverity).</li>
                                             <li>Managed code repositories (GitLab, ClearCase, Bitbucket) with Artifactory.</li>
@@ -330,14 +331,13 @@
                             </div>
                             <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-1">
                                 <div class="timeline-content">
-                                    <div class="timeline-summary" data-target-details="details-job-2" aria-expanded="false" aria-controls="details-job-2">
+                                    <div class="timeline-summary" data-target-details="details-job-2">
                                         <h4 class="text-lg font-semibold text-gray-800">Senior Linux Systems Admin</h4>
                                         <p class="text-xs text-gray-500 font-medium mb-1">Raytheon | Sep 2022 - Apr 2024</p>
-                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
-                                        <span class="text-xs text-gray-600">Details</span>
+                                        <span class="text-xs text-blue-600 hover:underline">View Details</span>
                                     </div>
-                                    <div id="details-job-2" class="timeline-details">
-                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                    <div id="details-job-2" class="hidden">
+                                        <ul class="list-disc list-inside space-y-1 text-sm">
                                             <li>Maintained and secured RHEL systems, ensuring compliance and high availability.</li>
                                             <li>Automated system admin tasks (antivirus, Splunk forwarders, config) with Ansible, improving efficiency by 25%.</li>
                                             <li>Collaborated with teams to troubleshoot RHEL systems.</li>
@@ -345,16 +345,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-2">
+                             <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-2">
                                 <div class="timeline-content">
-                                    <div class="timeline-summary" data-target-details="details-job-3" aria-expanded="false" aria-controls="details-job-3">
+                                    <div class="timeline-summary" data-target-details="details-job-3">
                                         <h4 class="text-lg font-semibold text-gray-800">Systems Engineer II</h4>
                                         <p class="text-xs text-gray-500 font-medium mb-1">GD Mission Systems | May 2022 - Sep 2022</p>
-                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
-                                        <span class="text-xs text-gray-600">Details</span>
+                                        <span class="text-xs text-blue-600 hover:underline">View Details</span>
                                     </div>
-                                    <div id="details-job-3" class="timeline-details">
-                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                    <div id="details-job-3" class="hidden">
+                                        <ul class="list-disc list-inside space-y-1 text-sm">
                                             <li>Supported and integrated software infrastructure into surface ship systems.</li>
                                             <li>Developed technical documentation and software packages (Ansible, Bash, PowerShell).</li>
                                             <li>Managed version control with Git.</li>
@@ -366,14 +365,13 @@
                             </div>
                             <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-3">
                                 <div class="timeline-content">
-                                    <div class="timeline-summary" data-target-details="details-job-4" aria-expanded="false" aria-controls="details-job-4">
+                                    <div class="timeline-summary" data-target-details="details-job-4">
                                         <h4 class="text-lg font-semibold text-gray-800">Systems Engineer I</h4>
                                         <p class="text-xs text-gray-500 font-medium mb-1">GD Mission Systems | Jun 2020 - May 2022</p>
-                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
-                                        <span class="text-xs text-gray-600">Details</span>
-                                    </div>
-                                    <div id="details-job-4" class="timeline-details">
-                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                         <span class="text-xs text-blue-600 hover:underline">View Details</span>
+                                   </div>
+                                    <div id="details-job-4" class="hidden">
+                                        <ul class="list-disc list-inside space-y-1 text-sm">
                                             <li>Supported and integrated software infrastructure for surface ship systems.</li>
                                             <li>Developed documentation and scripts for software configuration/installation.</li>
                                             <li>Conducted software testing.</li>
@@ -383,14 +381,13 @@
                             </div>
                             <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-4">
                                 <div class="timeline-content">
-                                    <div class="timeline-summary" data-target-details="details-job-5" aria-expanded="false" aria-controls="details-job-5">
+                                    <div class="timeline-summary" data-target-details="details-job-5">
                                         <h4 class="text-lg font-semibold text-gray-800">Intern Engineer</h4>
                                         <p class="text-xs text-gray-500 font-medium mb-1">GD Mission Systems | Mar 2020 - Jun 2020</p>
-                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
-                                        <span class="text-xs text-gray-600">Details</span>
-                                    </div>
-                                    <div id="details-job-5" class="timeline-details">
-                                        <ul class="mt-2 list-disc list-inside text-gray-600 space-y-1 text-sm">
+                                         <span class="text-xs text-blue-600 hover:underline">View Details</span>
+                                   </div>
+                                    <div id="details-job-5" class="hidden">
+                                        <ul class="list-disc list-inside space-y-1 text-sm">
                                             <li>Conducted peer reviews of technical documentation.</li>
                                             <li>Tested documentation and software packages against standards.</li>
                                         </ul>
@@ -399,14 +396,13 @@
                             </div>
                             <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-5">
                                 <div class="timeline-content">
-                                    <div class="timeline-summary" data-target-details="details-edu-1" aria-expanded="false" aria-controls="details-edu-1">
+                                    <div class="timeline-summary" data-target-details="details-edu-1">
                                         <h4 class="text-lg font-semibold text-gray-800">Education</h4>
                                         <p class="text-xs text-gray-500 font-medium mb-1">Westfield State University | 2014 - 2020</p>
-                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
-                                        <span class="text-xs text-gray-600">Details</span>
-                                    </div>
-                                    <div id="details-edu-1" class="timeline-details">
-                                        <ul class="mt-2 list-none text-gray-600 space-y-1 text-sm">
+                                         <span class="text-xs text-blue-600 hover:underline">View Details</span>
+                                   </div>
+                                    <div id="details-edu-1" class="hidden">
+                                        <ul class="list-none space-y-1 text-sm">
                                             <li>B.S. Computer Science (2016 - 2020)</li>
                                             <li>B.S. Criminal Justice (2014 - 2020)</li>
                                         </ul>
@@ -415,14 +411,13 @@
                             </div>
                             <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-6">
                                 <div class="timeline-content">
-                                    <div class="timeline-summary" data-target-details="details-certs-1" aria-expanded="false" aria-controls="details-certs-1">
+                                    <div class="timeline-summary" data-target-details="details-certs-1">
                                         <h4 class="text-lg font-semibold text-gray-800">Certs & Clearance</h4>
                                         <p class="text-xs text-gray-500 font-medium mb-1">2020 - Present</p>
-                                        <span class="arrow text-blue-500 font-bold text-sm mr-1">&rarr;</span>
-                                        <span class="text-xs text-gray-600">Details</span>
-                                    </div>
-                                    <div id="details-certs-1" class="timeline-details">
-                                        <ul class="mt-2 list-none text-gray-600 space-y-1 text-sm">
+                                         <span class="text-xs text-blue-600 hover:underline">View Details</span>
+                                   </div>
+                                    <div id="details-certs-1" class="hidden">
+                                        <ul class="list-none space-y-1 text-sm">
                                             <li>CompTIA Security+ (Valid: 2024 - 2027)</li>
                                             <li>Security Clearance: Secret (Valid: 2020 - 2030)</li>
                                         </ul>
@@ -547,6 +542,21 @@
 
     </main>
 
+    <div id="timeline-modal" class="hidden"> <div id="modal-background" class="absolute inset-0 cursor-pointer"></div>
+        <div id="modal-content-container" class="cursor-pointer">
+             <button id="modal-close-button" aria-label="Close details" class="focus:outline-none">
+                 <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h3 id="modal-title" class="text-2xl font-bold text-gray-900 mb-2"></h3>
+            <p id="modal-subtitle" class="text-sm text-gray-500 font-medium mb-4"></p>
+            <div id="modal-details-content" class="text-gray-700 text-base">
+                </div>
+        </div>
+    </div>
+
+
     <footer class="bg-gray-800 text-gray-400 py-6 text-center">
         <div class="container mx-auto">
             <p>&copy; <span id="currentYear"></span> Peter Aldrich Jr. All rights reserved.</p>
@@ -584,90 +594,98 @@
             });
         });
 
-        // --- Interactive Timeline ---
+        // --- Timeline Modal Logic ---
         const timelineSummaries = document.querySelectorAll('.timeline-summary');
+        const modal = document.getElementById('timeline-modal');
+        const modalContentContainer = document.getElementById('modal-content-container');
+        const modalBackground = document.getElementById('modal-background');
+        const modalTitle = document.getElementById('modal-title');
+        const modalSubtitle = document.getElementById('modal-subtitle');
+        const modalDetailsContent = document.getElementById('modal-details-content');
+        const modalCloseButton = document.getElementById('modal-close-button');
+
+        function openModal(summaryElement) {
+            const targetId = summaryElement.getAttribute('data-target-details');
+            const detailsHiddenDiv = document.getElementById(targetId);
+            const title = summaryElement.querySelector('h4').textContent;
+            const subtitle = summaryElement.querySelector('p').textContent;
+
+            if (detailsHiddenDiv && modal && modalContentContainer) {
+                modalTitle.textContent = title;
+                modalSubtitle.textContent = subtitle;
+                modalDetailsContent.innerHTML = detailsHiddenDiv.innerHTML;
+                const rect = summaryElement.getBoundingClientRect();
+                const originX = rect.left + rect.width / 2;
+                const originY = rect.top + rect.height / 2;
+                modalContentContainer.style.transformOrigin = `${originX}px ${originY}px`;
+                modal.classList.remove('hidden');
+                document.body.classList.add('modal-open');
+                requestAnimationFrame(() => {
+                     modal.classList.add('active');
+                });
+            }
+        }
+
+        function closeModal() {
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+                 modal.addEventListener('transitionend', () => {
+                     if (!modal.classList.contains('active')) {
+                         modal.classList.add('hidden');
+                         modalTitle.textContent = '';
+                         modalSubtitle.textContent = '';
+                         modalDetailsContent.innerHTML = '';
+                         modalContentContainer.style.transformOrigin = '';
+                     }
+                 }, { once: true });
+            }
+        }
+
+        timelineSummaries.forEach(summary => {
+            summary.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openModal(summary);
+            });
+        });
+
+        if (modalBackground) { modalBackground.addEventListener('click', closeModal); }
+        if (modalContentContainer) {
+             modalContentContainer.addEventListener('click', (e) => {
+                 if (e.target === modalContentContainer) { closeModal(); }
+             });
+         }
+        if (modalCloseButton) { modalCloseButton.addEventListener('click', (e) => { e.stopPropagation(); closeModal(); }); }
+
+
+        // --- Timeline Scroll Arrows Logic ---
         const timelineContainer = document.getElementById('timeline-scroll-container');
         const scrollLeftButton = document.getElementById('scroll-left-button');
         const scrollRightButton = document.getElementById('scroll-right-button');
 
-        timelineSummaries.forEach(summary => {
-            summary.addEventListener('click', () => {
-                const targetId = summary.getAttribute('data-target-details');
-                const detailsElement = document.getElementById(targetId);
-                const timelineItem = summary.closest('.timeline-item-horizontal');
-
-                if (detailsElement && timelineItem) {
-                    // Close other open items
-                    timelineSummaries.forEach(otherSummary => {
-                        if (otherSummary !== summary && otherSummary.classList.contains('active')) {
-                            otherSummary.classList.remove('active');
-                            otherSummary.setAttribute('aria-expanded', 'false');
-                            const otherDetailsId = otherSummary.getAttribute('data-target-details');
-                            document.getElementById(otherDetailsId)?.classList.remove('active');
-                        }
-                    });
-
-                    // Toggle clicked item
-                    const isOpening = !summary.classList.contains('active');
-                    summary.classList.toggle('active');
-                    summary.setAttribute('aria-expanded', isOpening ? 'true' : 'false');
-                    detailsElement.classList.toggle('active');
-
-                    // Scroll the container to center the clicked item
-                    if (isOpening && timelineItem && timelineContainer) {
-                         const containerRect = timelineContainer.getBoundingClientRect();
-                         const itemRect = timelineItem.getBoundingClientRect();
-                         const scrollLeft = timelineContainer.scrollLeft + (itemRect.left - containerRect.left) - (containerRect.width / 2) + (itemRect.width / 2);
-                         timelineContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' });
-                    }
-                }
-            });
-        });
-
-        // --- Timeline Scroll Arrows Logic ---
         function updateTimelineArrows() {
             if (!timelineContainer || !scrollLeftButton || !scrollRightButton) return;
-
             const scrollLeft = timelineContainer.scrollLeft;
             const scrollWidth = timelineContainer.scrollWidth;
             const clientWidth = timelineContainer.clientWidth;
-            const scrollThreshold = 10; // Small threshold
-
-            // Left Arrow Visibility
-            if (scrollLeft > scrollThreshold) {
-                scrollLeftButton.classList.add('visible');
-            } else {
-                scrollLeftButton.classList.remove('visible');
-            }
-
-            // Right Arrow Visibility
-            if (scrollLeft < scrollWidth - clientWidth - scrollThreshold) {
-                scrollRightButton.classList.add('visible');
-            } else {
-                scrollRightButton.classList.remove('visible');
-            }
+            const scrollThreshold = 10;
+            if (scrollLeft > scrollThreshold) { scrollLeftButton.classList.add('visible'); }
+            else { scrollLeftButton.classList.remove('visible'); }
+            if (scrollLeft < scrollWidth - clientWidth - scrollThreshold) { scrollRightButton.classList.add('visible'); }
+            else { scrollRightButton.classList.remove('visible'); }
         }
 
         if (timelineContainer && scrollLeftButton && scrollRightButton) {
-            // Scroll button click handlers
             scrollLeftButton.addEventListener('click', () => {
-                const scrollAmount = timelineContainer.clientWidth * 0.7; // Scroll by 70% of visible width
+                const scrollAmount = timelineContainer.clientWidth * 0.7;
                 timelineContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
             });
-
             scrollRightButton.addEventListener('click', () => {
                 const scrollAmount = timelineContainer.clientWidth * 0.7;
                 timelineContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
             });
-
-            // Update arrows on scroll
             timelineContainer.addEventListener('scroll', updateTimelineArrows);
-
-            // Update arrows on resize
             window.addEventListener('resize', updateTimelineArrows);
-
-            // Initial check
-             // Use setTimeout to ensure layout is calculated after initial render
             setTimeout(updateTimelineArrows, 100);
         }
 
@@ -686,7 +704,7 @@
             });
         };
         const observer = new IntersectionObserver(observerCallback, observerOptions);
-        const elementsToObserve = document.querySelectorAll('.animate-on-scroll:not(.timeline-details)');
+        const elementsToObserve = document.querySelectorAll('.animate-on-scroll');
         elementsToObserve.forEach(el => { observer.observe(el); });
         const sectionTitles = document.querySelectorAll('.section-title');
         sectionTitles.forEach(title => { observer.observe(title); });
