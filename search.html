@@ -26,15 +26,21 @@
             flex-grow: 1; /* Takes up available space */
             padding-bottom: 15vh; /* Push up slightly from true center */
         }
-        /* State after search: Move search bar to top */
+        /* State after search: Move search bar to top center */
         #search-container.searched-state {
             padding-top: 1.5rem; /* Add padding when at top */
             padding-bottom: 1rem;
-            align-items: flex-start; /* Align to left */
+            align-items: center; /* Center items horizontally */
+        }
+        #search-form-wrapper { /* Wrapper for form and filters */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px; /* Limit search bar width */
         }
         #search-form {
             width: 100%;
-            max-width: 600px; /* Limit search bar width */
             display: flex;
             align-items: center;
             border: 1px solid #dfe1e5;
@@ -43,6 +49,7 @@
             background-color: #ffffff;
             box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
             transition: all 0.3s ease-in-out; /* Smooth transition */
+            margin-bottom: 0.75rem; /* Space below search bar for filters */
         }
          #search-form:hover,
          #search-form:focus-within {
@@ -68,6 +75,35 @@
          #search-button i {
              font-size: 1.25rem;
          }
+
+         /* Filter Controls */
+         #filter-controls {
+            display: flex;
+            flex-wrap: wrap; /* Allow filters to wrap on small screens */
+            justify-content: center; /* Center filters */
+            gap: 0.5rem; /* Space between buttons */
+         }
+         .filter-button {
+            padding: 0.375rem 0.75rem; /* Slightly smaller padding */
+            font-size: 0.875rem; /* text-sm */
+            border-radius: 9999px; /* Fully rounded */
+            border: 1px solid #dfe1e5;
+            background-color: #f8f9fa;
+            color: #5f6368;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+         }
+         .filter-button:hover {
+            background-color: #f1f3f4;
+            border-color: #dadce0;
+         }
+         .filter-button.active {
+            background-color: #e8f0fe; /* Light blue background for active */
+            border-color: #d2e3fc;
+            color: #1967d2; /* Darker blue text */
+            font-weight: 500; /* Medium weight for active */
+         }
+
 
         /* Results styling */
         #results-area {
@@ -208,12 +244,20 @@
              <span class="text-blue-600">U</span><span class="text-red-600">n</span><span class="text-yellow-500">i</span><span class="text-blue-600">f</span><span class="text-green-600">i</span><span class="text-red-600">e</span>d Search
         </h1>
 
-        <form id="search-form">
-            <input type="text" id="search-input" name="query" required placeholder="Search GitHub, GitLab, Bitbucket, Hugging Face...">
-            <button type="submit" id="search-button" title="Search">
-                <i class="fas fa-search"></i>
-            </button>
-        </form>
+        <div id="search-form-wrapper">
+            <form id="search-form">
+                <input type="text" id="search-input" name="query" required placeholder="Search GitHub, GitLab, Bitbucket, Hugging Face...">
+                <button type="submit" id="search-button" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+            <div id="filter-controls" class="hidden">
+                <button class="filter-button active" data-sort="relevant">Relevant</button>
+                <button class="filter-button" data-sort="updated">Updated</button>
+                <button class="filter-button" data-sort="likes">Likes/Stars</button>
+                <button class="filter-button" data-sort="downloads">Downloads</button>
+            </div>
+        </div>
     </div>
 
     <div id="loading" class="loading-indicator hidden w-full">
@@ -234,140 +278,169 @@
     <script>
         // --- DOM Elements ---
         const searchContainer = document.getElementById('search-container');
+        const searchFormWrapper = document.getElementById('search-form-wrapper');
         const searchForm = document.getElementById('search-form');
         const searchInput = document.getElementById('search-input');
         const loadingIndicator = document.getElementById('loading');
-        const errorMessageDiv = document.getElementById('error-message'); // General error
+        const errorMessageDiv = document.getElementById('error-message');
         const resultsArea = document.getElementById('results-area');
         const initialStateTitle = document.querySelector('.initial-state-title');
         const combinedResultsList = document.getElementById('combined-results-list');
-        const resultsMessage = document.getElementById('results-message'); // For "No results"
+        const resultsMessage = document.getElementById('results-message');
+        const filterControls = document.getElementById('filter-controls');
+        const filterButtons = filterControls.querySelectorAll('.filter-button');
 
         // --- Constants ---
         const GITHUB_API_URL = 'https://api.github.com/search/repositories';
         const GITLAB_API_URL = 'https://gitlab.com/api/v4/projects';
         const BITBUCKET_API_URL = 'https://api.bitbucket.org/2.0/repositories';
         const HUGGINGFACE_API_URL = 'https://huggingface.co/api/models';
-        const RESULTS_PER_PAGE = 10; // Max results *per platform* before combining
+        const RESULTS_PER_PAGE = 10;
+
+        // --- State ---
+        let currentSort = 'relevant'; // 'relevant', 'updated', 'likes', 'downloads'
+        let currentQuery = '';
 
         // --- Event Listeners ---
-        searchForm.addEventListener('submit', handleSearchSubmit);
+        searchForm.addEventListener('submit', (event) => {
+             event.preventDefault();
+             currentQuery = searchInput.value.trim();
+             // Keep current sort when submitting a new query
+             performSearch();
+        });
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const newSort = button.getAttribute('data-sort');
+                if (newSort !== currentSort) {
+                    currentSort = newSort;
+                    updateFilterButtonsUI();
+                    if (currentQuery) {
+                         performSearch(); // Re-run search with new sort
+                    }
+                }
+            });
+        });
+
 
         // --- Functions ---
 
         /**
-         * Handles the search form submission. Fetches from all platforms and displays combined results.
-         * @param {Event} event - The form submission event.
+         * Main function to perform the search based on currentQuery and currentSort.
          */
-        async function handleSearchSubmit(event) {
-            event.preventDefault();
-            const query = searchInput.value.trim();
+        async function performSearch() {
+             if (!currentQuery) {
+                 showError("Please enter a search query.");
+                 return;
+             }
 
-            if (!query) {
-                showError("Please enter a search query.");
-                return;
-            }
+             clearResultsAndErrors();
+             showLoading(true);
+             searchContainer.classList.remove('initial-state');
+             searchContainer.classList.add('searched-state');
+             if (initialStateTitle) initialStateTitle.classList.add('hidden');
+             resultsArea.classList.remove('hidden');
+             filterControls.classList.remove('hidden');
 
-            // --- UI Updates ---
-            clearResultsAndErrors();
-            showLoading(true);
-            searchContainer.classList.remove('initial-state');
-            searchContainer.classList.add('searched-state');
-            if (initialStateTitle) initialStateTitle.classList.add('hidden');
-            resultsArea.classList.remove('hidden'); // Show results container
+             const encodedQuery = encodeURIComponent(currentQuery);
+             let githubUrl = `${GITHUB_API_URL}?q=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
+             let gitlabUrl = `${GITLAB_API_URL}?search=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
+             let bitbucketUrl = `${BITBUCKET_API_URL}?q=${encodedQuery}&page=1&pagelen=${RESULTS_PER_PAGE}`;
+             let huggingfaceUrl = `${HUGGINGFACE_API_URL}?search=${encodedQuery}&limit=${RESULTS_PER_PAGE}&full=true`; // Always request full data
 
-            // --- API URLs ---
-            const githubUrl = `${GITHUB_API_URL}?q=${encodeURIComponent(query)}&per_page=${RESULTS_PER_PAGE}`;
-            const gitlabUrl = `${GITLAB_API_URL}?search=${encodeURIComponent(query)}&per_page=${RESULTS_PER_PAGE}`;
-            const bitbucketUrl = `${BITBUCKET_API_URL}?q=${encodeURIComponent(query)}&page=1&pagelen=${RESULTS_PER_PAGE}`;
-            const huggingfaceUrl = `${HUGGINGFACE_API_URL}?search=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&full=true`;
+             // --- Apply Sorting Parameters ---
+             switch (currentSort) {
+                 case 'updated':
+                     githubUrl += '&sort=updated&order=desc';
+                     gitlabUrl += '&sort=desc&order_by=last_activity_at';
+                     bitbucketUrl += '&sort=-updated_on';
+                     huggingfaceUrl += '&sort=lastModified&direction=-1';
+                     break;
+                 case 'likes': // Use stars for GitHub, likes for HF
+                     githubUrl += '&sort=stars&order=desc';
+                     // GitLab/Bitbucket don't easily support this sort via basic search
+                     huggingfaceUrl += '&sort=likes&direction=-1';
+                     break;
+                 case 'downloads': // Only applicable to Hugging Face
+                     huggingfaceUrl += '&sort=downloads&direction=-1';
+                     // GitHub/GitLab/Bitbucket don't have a direct equivalent via search API
+                     break;
+                 case 'relevant':
+                 default:
+                     // Use default API relevance sorting
+                     break;
+             }
 
-            let combinedResults = [];
-            let fetchErrors = 0;
+             let combinedResults = [];
+             let fetchErrors = 0;
 
-            try {
-                // Fetch from all APIs concurrently
-                const responses = await Promise.allSettled([
-                    fetch(githubUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } }),
-                    fetch(gitlabUrl),
-                    fetch(bitbucketUrl),
-                    fetch(huggingfaceUrl)
-                ]);
+             try {
+                 const responses = await Promise.allSettled([
+                     fetch(githubUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } }),
+                     fetch(gitlabUrl),
+                     fetch(bitbucketUrl),
+                     fetch(huggingfaceUrl)
+                 ]);
 
-                // --- Process GitHub results (index 0) ---
-                if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
-                    const data = await responses[0].value.json();
-                    combinedResults.push(...transformGitHubResults(data.items || []));
-                } else {
-                    fetchErrors++;
-                    logFetchError(responses[0], 'GitHub');
-                }
+                 // Process results (similar structure as before, just using updated URLs)
+                 if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
+                     const data = await responses[0].value.json();
+                     combinedResults.push(...transformGitHubResults(data.items || []));
+                 } else { fetchErrors++; logFetchError(responses[0], 'GitHub'); }
 
-                // --- Process GitLab results (index 1) ---
-                if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
-                    const data = await responses[1].value.json();
-                    combinedResults.push(...transformGitLabResults(data || []));
-                } else {
-                    fetchErrors++;
-                    logFetchError(responses[1], 'GitLab');
-                }
+                 if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
+                     const data = await responses[1].value.json();
+                     combinedResults.push(...transformGitLabResults(data || []));
+                 } else { fetchErrors++; logFetchError(responses[1], 'GitLab'); }
 
-                // --- Process Bitbucket results (index 2) ---
-                if (responses[2].status === 'fulfilled' && responses[2].value.ok) {
-                    const data = await responses[2].value.json();
-                    combinedResults.push(...transformBitbucketResults(data.values || []));
-                } else {
-                    fetchErrors++;
-                    logFetchError(responses[2], 'Bitbucket');
-                }
+                 if (responses[2].status === 'fulfilled' && responses[2].value.ok) {
+                     const data = await responses[2].value.json();
+                     combinedResults.push(...transformBitbucketResults(data.values || []));
+                 } else { fetchErrors++; logFetchError(responses[2], 'Bitbucket'); }
 
-                // --- Process Hugging Face results (index 3) ---
-                if (responses[3].status === 'fulfilled' && responses[3].value.ok) {
-                    const data = await responses[3].value.json();
-                    combinedResults.push(...transformHuggingFaceResults(data || []));
-                } else {
-                    fetchErrors++;
-                    logFetchError(responses[3], 'Hugging Face');
-                }
+                 if (responses[3].status === 'fulfilled' && responses[3].value.ok) {
+                     const data = await responses[3].value.json();
+                     // Pass the full model data to the transformer
+                     combinedResults.push(...transformHuggingFaceResults(data || []));
+                 } else { fetchErrors++; logFetchError(responses[3], 'Hugging Face'); }
 
-                // --- Display Combined Results ---
-                displayCombinedResults(combinedResults);
+                 // Display results
+                 displayCombinedResults(combinedResults);
 
-                // --- Handle No Results / All Errors ---
-                if (combinedResults.length === 0) {
-                    if (fetchErrors === responses.length) {
-                        // All fetches failed
-                        showError("Failed to fetch results from any platform. Please check your connection or try again later.");
-                    } else {
-                        // Fetches succeeded but found nothing
-                        showResultsMessage("No results found matching your query.");
-                    }
-                }
+                 // Handle No Results / All Errors
+                 if (combinedResults.length === 0) {
+                     if (fetchErrors === responses.length) {
+                         showError("Failed to fetch results from any platform. Please check your connection or try again later.");
+                     } else {
+                         // Provide more specific no results message including the sort order
+                         const sortTextMap = {
+                             relevant: 'relevance',
+                             updated: 'most updated',
+                             likes: 'most likes/stars',
+                             downloads: 'most downloads'
+                         };
+                         showResultsMessage(`No results found for "${escapeHtml(currentQuery)}" sorted by ${sortTextMap[currentSort]}.`);
+                     }
+                 }
 
-            } catch (error) {
-                // Catch errors outside the fetch promises
-                console.error("General Search Error:", error);
-                showError("An unexpected error occurred during the search.");
-            } finally {
-                showLoading(false);
-            }
+             } catch (error) {
+                 console.error("General Search Error:", error);
+                 showError("An unexpected error occurred during the search.");
+             } finally {
+                 showLoading(false);
+             }
         }
 
-        /**
-         * Logs fetch errors to the console.
-         * @param {PromiseSettledResult} result - The result object from Promise.allSettled.
-         * @param {string} platformName - The name of the platform (e.g., 'GitHub').
-         */
+        /** Logs fetch errors to the console. */
         function logFetchError(result, platformName) {
             const status = result.value?.status;
             const reason = result.reason?.message || `HTTP Error: ${status}`;
             console.error(`${platformName} Fetch Error: ${reason}`, result.reason || result.value);
-            // No UI message here, handled by checking combinedResults length later
         }
 
         // --- Data Transformation Functions ---
 
-        /** Transforms GitHub API data to a common format. */
+        /** Transforms GitHub API data. */
         function transformGitHubResults(items) {
             return items.map(item => ({
                 platform: 'github',
@@ -375,14 +448,14 @@
                 url: item.html_url,
                 description: item.description || '',
                 meta: [
-                    { icon: 'fas fa-star', value: item.stargazers_count.toLocaleString() },
-                    item.language ? { icon: 'fas fa-code', value: item.language } : null,
-                    { icon: 'fas fa-user', value: item.owner.login }
-                ].filter(m => m !== null) // Remove null entries (like language)
+                    { icon: 'fas fa-star', value: item.stargazers_count.toLocaleString(), label: 'Stars' },
+                    item.language ? { icon: 'fas fa-code', value: item.language, label: 'Language' } : null,
+                    { icon: 'fas fa-user', value: item.owner.login, label: 'Owner' }
+                ].filter(Boolean) // Filter out nulls
             }));
         }
 
-        /** Transforms GitLab API data to a common format. */
+        /** Transforms GitLab API data. */
         function transformGitLabResults(projects) {
             return projects.map(project => ({
                 platform: 'gitlab',
@@ -390,14 +463,14 @@
                 url: project.web_url,
                 description: project.description || '',
                 meta: [
-                    { icon: 'fas fa-star', value: project.star_count.toLocaleString() },
-                    { icon: 'fas fa-code-fork', value: project.forks_count.toLocaleString() },
-                    { icon: 'fas fa-user', value: project.namespace.name }
+                    { icon: 'fas fa-star', value: project.star_count.toLocaleString(), label: 'Stars' },
+                    { icon: 'fas fa-code-fork', value: project.forks_count.toLocaleString(), label: 'Forks' },
+                    { icon: 'fas fa-user', value: project.namespace.name, label: 'Namespace' }
                 ]
             }));
         }
 
-        /** Transforms Bitbucket API data to a common format. */
+        /** Transforms Bitbucket API data. */
         function transformBitbucketResults(repos) {
             return repos.map(repo => ({
                 platform: 'bitbucket',
@@ -405,50 +478,49 @@
                 url: repo.links?.html?.href || '#',
                 description: repo.description || '',
                 meta: [
-                    repo.language ? { icon: 'fas fa-code', value: repo.language } : null,
-                    { icon: 'fas fa-user', value: repo.owner?.display_name || repo.workspace?.name || 'Unknown' },
-                    repo.updated_on ? { icon: 'fas fa-clock', value: `Updated: ${new Date(repo.updated_on).toLocaleDateString()}` } : null
-                ].filter(m => m !== null)
+                    repo.language ? { icon: 'fas fa-code', value: repo.language, label: 'Language' } : null,
+                    { icon: 'fas fa-user', value: repo.owner?.display_name || repo.workspace?.name || 'Unknown', label: 'Owner' },
+                    repo.updated_on ? { icon: 'fas fa-clock', value: `Updated: ${new Date(repo.updated_on).toLocaleDateString()}`, label: 'Updated' } : null
+                ].filter(Boolean)
             }));
         }
 
-        /** Transforms Hugging Face API data to a common format. */
+        /** Transforms Hugging Face API data, including downloads. */
         function transformHuggingFaceResults(models) {
+            // Ensure models is an array
+             if (!Array.isArray(models)) {
+                 console.warn("Hugging Face API did not return an array:", models);
+                 return [];
+             }
             return models.map(model => ({
                 platform: 'huggingface',
                 title: model.modelId,
                 url: `https://huggingface.co/${model.modelId}`,
                 description: model.cardData?.description || model.description || '',
                 meta: [
-                    { icon: 'fas fa-heart', value: model.likes?.toLocaleString() || 0 },
-                    model.pipeline_tag ? { icon: 'fas fa-tags', value: model.pipeline_tag } : null,
-                    { icon: 'fas fa-user', value: model.author || model.modelId.split('/')[0] },
-                    model.lastModified ? { icon: 'fas fa-clock', value: `Updated: ${new Date(model.lastModified).toLocaleDateString()}` } : null
-                ].filter(m => m !== null)
+                    { icon: 'fas fa-heart', value: model.likes?.toLocaleString() || 0, label: 'Likes' },
+                    // Include downloads if available (check if the 'downloads' field exists)
+                    (typeof model.downloads !== 'undefined') ? { icon: 'fas fa-download', value: model.downloads.toLocaleString(), label: 'Downloads' } : null,
+                    model.pipeline_tag ? { icon: 'fas fa-tags', value: model.pipeline_tag, label: 'Task' } : null,
+                    { icon: 'fas fa-user', value: model.author || model.modelId.split('/')[0], label: 'Author' },
+                    model.lastModified ? { icon: 'fas fa-clock', value: `Updated: ${new Date(model.lastModified).toLocaleDateString()}`, label: 'Updated' } : null
+                ].filter(Boolean) // Filter out null entries (like downloads if not present)
             }));
         }
 
 
-        /**
-         * Displays the combined results in the list.
-         * @param {Array} results - Array of combined and transformed result objects.
-         */
+        /** Displays the combined results in the list. */
         function displayCombinedResults(results) {
-            combinedResultsList.innerHTML = ''; // Clear previous results
+            combinedResultsList.innerHTML = '';
 
             if (!results || results.length === 0) {
-                // Message handled by the caller (handleSearchSubmit)
                 return;
             }
-
-            // Optional: Sort results (e.g., by title, though relevance is hard without scores)
-            // results.sort((a, b) => a.title.localeCompare(b.title));
 
             results.forEach(result => {
                 const listItem = document.createElement('li');
                 listItem.className = 'result-item';
 
-                // Determine platform icon class
                 let platformIconClass = '';
                 switch (result.platform) {
                     case 'github': platformIconClass = 'fab fa-github'; break;
@@ -457,9 +529,9 @@
                     case 'huggingface': platformIconClass = 'fas fa-robot'; break;
                 }
 
-                // Generate meta HTML
+                // Generate meta HTML with labels for tooltips/accessibility
                 const metaHtml = result.meta.map(m => `
-                    <span><i class="${m.icon}"></i> ${escapeHtml(m.value)}</span>
+                    <span title="${m.label || ''}"><i class="${m.icon}"></i> ${escapeHtml(m.value)}</span>
                 `).join('');
 
                 listItem.innerHTML = `
@@ -479,7 +551,7 @@
             loadingIndicator.classList.toggle('hidden', !isLoading);
         }
 
-        /** Displays the general error message below the search bar. */
+        /** Displays the general error message. */
         function showError(message) {
             errorMessageDiv.textContent = message;
             errorMessageDiv.classList.remove('hidden');
@@ -495,10 +567,16 @@
         function clearResultsAndErrors() {
             errorMessageDiv.classList.add('hidden');
             errorMessageDiv.textContent = '';
-            combinedResultsList.innerHTML = ''; // Clear the combined list
-            resultsMessage.classList.add('hidden'); // Hide the no-results message
+            combinedResultsList.innerHTML = '';
+            resultsMessage.classList.add('hidden');
             resultsMessage.textContent = '';
-            // Don't hide resultsArea itself, handleSearchSubmit manages its visibility
+        }
+
+        /** Updates the visual state of filter buttons. */
+        function updateFilterButtonsUI() {
+            filterButtons.forEach(button => {
+                button.classList.toggle('active', button.getAttribute('data-sort') === currentSort);
+            });
         }
 
         /** Escapes HTML characters to prevent XSS. */
@@ -507,6 +585,9 @@
             const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return str.replace(/[&<>"']/g, m => map[m]);
         }
+
+        // Initial UI setup
+        updateFilterButtonsUI();
 
     </script>
 
