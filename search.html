@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Dev & AI Search</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Lighter gray background */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* Initial state: Center search bar like Google */
+        #search-container.initial-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1; /* Takes up available space */
+            padding-bottom: 15vh; /* Push up slightly from true center */
+        }
+        /* State after search: Move search bar to top */
+        #search-container.searched-state {
+            padding-top: 1.5rem; /* Add padding when at top */
+            padding-bottom: 1rem;
+            align-items: flex-start; /* Align to left */
+        }
+        #search-form {
+            width: 100%;
+            max-width: 600px; /* Limit search bar width */
+            display: flex;
+            align-items: center;
+            border: 1px solid #dfe1e5;
+            border-radius: 9999px; /* Fully rounded */
+            padding: 0.5rem 1rem;
+            background-color: #ffffff;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
+            transition: all 0.3s ease-in-out; /* Smooth transition */
+        }
+         #search-form:hover,
+         #search-form:focus-within {
+             box-shadow: 0 2px 8px rgba(32, 33, 36, 0.15);
+             border-color: #e8e8e8;
+         }
+         #search-input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            padding: 0.5rem;
+            font-size: 1rem;
+            background: transparent;
+         }
+         #search-button {
+            background: transparent;
+            border: none;
+            color: #4285f4; /* Google blue */
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-left: 0.5rem;
+         }
+         #search-button i {
+             font-size: 1.25rem;
+         }
+
+        /* Results styling */
+        #results-area {
+            padding: 1rem 1rem 2rem 1rem; /* Add padding around results */
+            width: 100%;
+            max-width: 800px; /* Limit results width */
+            margin: 0 auto; /* Center results area */
+        }
+        .results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #ffffff;
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Ensure child borders don't overlap */
+        }
+        .result-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e8eaed;
+            transition: background-color 0.2s ease-in-out;
+            position: relative; /* For absolute positioning of platform icon */
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .result-item:hover {
+            background-color: #f8f9fa;
+        }
+         .result-item .platform-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.25rem; /* text-xl */
+            color: #adb5bd; /* gray-400 */
+         }
+        .result-item a {
+            color: #1a0dab; /* Google link blue */
+            text-decoration: none;
+            font-size: 1.125rem; /* text-lg */
+            display: block; /* Make link take full width */
+            margin-bottom: 0.25rem;
+            padding-right: 2rem; /* Space for the icon */
+        }
+        .result-item a:hover {
+            text-decoration: underline;
+        }
+        .result-item .description {
+            color: #4d5156; /* Standard text color */
+            font-size: 0.875rem; /* text-sm */
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+            /* Limit description lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Show max 2 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 2rem; /* Space for the icon */
+        }
+        .result-item .meta {
+            font-size: 0.875rem; /* text-sm */
+            color: #70757a; /* Lighter meta text */
+            display: flex;
+            flex-wrap: wrap; /* Allow meta items to wrap on smaller screens */
+            align-items: center;
+            gap: 0.5rem 1rem; /* Row and column gap */
+            padding-right: 2rem; /* Space for the icon */
+        }
+         .result-item .meta span {
+             display: inline-flex;
+             align-items: center;
+             gap: 0.25rem; /* Space between icon and text */
+         }
+         .result-item .meta i {
+             color: #80868b; /* Slightly darker icon color */
+             width: 1em; /* Ensure icons align nicely */
+             text-align: center;
+         }
+        .error-message { /* General error below search */
+            color: #d93025; /* Google red */
+            background-color: #fce8e6;
+            border: 1px solid #f9c6c2;
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem; /* rounded-md */
+            margin-top: 1rem;
+            text-align: center;
+        }
+         /* Message shown when no results are found */
+        #results-message {
+             text-align: center;
+             color: #70757a; /* gray-500 */
+             padding: 1.5rem;
+             font-size: 1rem; /* text-base */
+             background-color: #ffffff;
+             border-radius: 0.5rem;
+             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+             margin-top: 1rem; /* Space from search bar */
+        }
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #70757a;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .spinner {
+            border: 4px solid #f3f4f6; /* Light grey */
+            border-top: 4px solid #4285f4; /* Blue */
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 0.5rem; /* Space below spinner */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Hide elements */
+        .hidden {
+            display: none;
+        }
+        /* Platform icon colors */
+        .fa-github { color: #333; }
+        .fa-gitlab { color: #fc6d26; }
+        .fa-bitbucket { color: #0052cc; }
+        .fa-robot { color: #ffc222; }
+
+    </style>
+</head>
+<body>
+
+    <div id="search-container" class="initial-state w-full px-4">
+        <h1 class="text-4xl font-bold text-gray-700 mb-6 text-center initial-state-title">
+             <span class="text-blue-600">U</span><span class="text-red-600">n</span><span class="text-yellow-500">i</span><span class="text-blue-600">f</span><span class="text-green-600">i</span><span class="text-red-600">e</span>d Search
+        </h1>
+
+        <form id="search-form">
+            <input type="text" id="search-input" name="query" required placeholder="Search GitHub, GitLab, Bitbucket, Hugging Face...">
+            <button type="submit" id="search-button" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+
+    <div id="loading" class="loading-indicator hidden w-full">
+        <div>
+             <div class="spinner mx-auto"></div>
+             <span>Searching across platforms...</span>
+        </div>
+    </div>
+
+    <div id="error-message" class="error-message hidden max-w-xl mx-auto"></div>
+
+    <div id="results-area" class="hidden">
+         <ul id="combined-results-list" class="results-list">
+             </ul>
+         <div id="results-message" class="hidden"></div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const searchContainer = document.getElementById('search-container');
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+        const loadingIndicator = document.getElementById('loading');
+        const errorMessageDiv = document.getElementById('error-message'); // General error
+        const resultsArea = document.getElementById('results-area');
+        const initialStateTitle = document.querySelector('.initial-state-title');
+        const combinedResultsList = document.getElementById('combined-results-list');
+        const resultsMessage = document.getElementById('results-message'); // For "No results"
+
+        // --- Constants ---
+        const GITHUB_API_URL = 'https://api.github.com/search/repositories';
+        const GITLAB_API_URL = 'https://gitlab.com/api/v4/projects';
+        const BITBUCKET_API_URL = 'https://api.bitbucket.org/2.0/repositories';
+        const HUGGINGFACE_API_URL = 'https://huggingface.co/api/models';
+        const RESULTS_PER_PAGE = 10; // Max results *per platform* before combining
+
+        // --- Event Listeners ---
+        searchForm.addEventListener('submit', handleSearchSubmit);
+
+        // --- Functions ---
+
+        /**
+         * Handles the search form submission. Fetches from all platforms and displays combined results.
+         * @param {Event} event - The form submission event.
+         */
+        async function handleSearchSubmit(event) {
+            event.preventDefault();
+            const query = searchInput.value.trim();
+
+            if (!query) {
+                showError("Please enter a search query.");
+                return;
+            }
+
+            // --- UI Updates ---
+            clearResultsAndErrors();
+            showLoading(true);
+            searchContainer.classList.remove('initial-state');
+            searchContainer.classList.add('searched-state');
+            if (initialStateTitle) initialStateTitle.classList.add('hidden');
+            resultsArea.classList.remove('hidden'); // Show results container
+
+            // --- API URLs ---
+            const githubUrl = `${GITHUB_API_URL}?q=${encodeURIComponent(query)}&per_page=${RESULTS_PER_PAGE}`;
+            const gitlabUrl = `${GITLAB_API_URL}?search=${encodeURIComponent(query)}&per_page=${RESULTS_PER_PAGE}`;
+            const bitbucketUrl = `${BITBUCKET_API_URL}?q=${encodeURIComponent(query)}&page=1&pagelen=${RESULTS_PER_PAGE}`;
+            const huggingfaceUrl = `${HUGGINGFACE_API_URL}?search=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&full=true`;
+
+            let combinedResults = [];
+            let fetchErrors = 0;
+
+            try {
+                // Fetch from all APIs concurrently
+                const responses = await Promise.allSettled([
+                    fetch(githubUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } }),
+                    fetch(gitlabUrl),
+                    fetch(bitbucketUrl),
+                    fetch(huggingfaceUrl)
+                ]);
+
+                // --- Process GitHub results (index 0) ---
+                if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
+                    const data = await responses[0].value.json();
+                    combinedResults.push(...transformGitHubResults(data.items || []));
+                } else {
+                    fetchErrors++;
+                    logFetchError(responses[0], 'GitHub');
+                }
+
+                // --- Process GitLab results (index 1) ---
+                if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
+                    const data = await responses[1].value.json();
+                    combinedResults.push(...transformGitLabResults(data || []));
+                } else {
+                    fetchErrors++;
+                    logFetchError(responses[1], 'GitLab');
+                }
+
+                // --- Process Bitbucket results (index 2) ---
+                if (responses[2].status === 'fulfilled' && responses[2].value.ok) {
+                    const data = await responses[2].value.json();
+                    combinedResults.push(...transformBitbucketResults(data.values || []));
+                } else {
+                    fetchErrors++;
+                    logFetchError(responses[2], 'Bitbucket');
+                }
+
+                // --- Process Hugging Face results (index 3) ---
+                if (responses[3].status === 'fulfilled' && responses[3].value.ok) {
+                    const data = await responses[3].value.json();
+                    combinedResults.push(...transformHuggingFaceResults(data || []));
+                } else {
+                    fetchErrors++;
+                    logFetchError(responses[3], 'Hugging Face');
+                }
+
+                // --- Display Combined Results ---
+                displayCombinedResults(combinedResults);
+
+                // --- Handle No Results / All Errors ---
+                if (combinedResults.length === 0) {
+                    if (fetchErrors === responses.length) {
+                        // All fetches failed
+                        showError("Failed to fetch results from any platform. Please check your connection or try again later.");
+                    } else {
+                        // Fetches succeeded but found nothing
+                        showResultsMessage("No results found matching your query.");
+                    }
+                }
+
+            } catch (error) {
+                // Catch errors outside the fetch promises
+                console.error("General Search Error:", error);
+                showError("An unexpected error occurred during the search.");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * Logs fetch errors to the console.
+         * @param {PromiseSettledResult} result - The result object from Promise.allSettled.
+         * @param {string} platformName - The name of the platform (e.g., 'GitHub').
+         */
+        function logFetchError(result, platformName) {
+            const status = result.value?.status;
+            const reason = result.reason?.message || `HTTP Error: ${status}`;
+            console.error(`${platformName} Fetch Error: ${reason}`, result.reason || result.value);
+            // No UI message here, handled by checking combinedResults length later
+        }
+
+        // --- Data Transformation Functions ---
+
+        /** Transforms GitHub API data to a common format. */
+        function transformGitHubResults(items) {
+            return items.map(item => ({
+                platform: 'github',
+                title: item.full_name,
+                url: item.html_url,
+                description: item.description || '',
+                meta: [
+                    { icon: 'fas fa-star', value: item.stargazers_count.toLocaleString() },
+                    item.language ? { icon: 'fas fa-code', value: item.language } : null,
+                    { icon: 'fas fa-user', value: item.owner.login }
+                ].filter(m => m !== null) // Remove null entries (like language)
+            }));
+        }
+
+        /** Transforms GitLab API data to a common format. */
+        function transformGitLabResults(projects) {
+            return projects.map(project => ({
+                platform: 'gitlab',
+                title: project.name_with_namespace,
+                url: project.web_url,
+                description: project.description || '',
+                meta: [
+                    { icon: 'fas fa-star', value: project.star_count.toLocaleString() },
+                    { icon: 'fas fa-code-fork', value: project.forks_count.toLocaleString() },
+                    { icon: 'fas fa-user', value: project.namespace.name }
+                ]
+            }));
+        }
+
+        /** Transforms Bitbucket API data to a common format. */
+        function transformBitbucketResults(repos) {
+            return repos.map(repo => ({
+                platform: 'bitbucket',
+                title: repo.full_name,
+                url: repo.links?.html?.href || '#',
+                description: repo.description || '',
+                meta: [
+                    repo.language ? { icon: 'fas fa-code', value: repo.language } : null,
+                    { icon: 'fas fa-user', value: repo.owner?.display_name || repo.workspace?.name || 'Unknown' },
+                    repo.updated_on ? { icon: 'fas fa-clock', value: `Updated: ${new Date(repo.updated_on).toLocaleDateString()}` } : null
+                ].filter(m => m !== null)
+            }));
+        }
+
+        /** Transforms Hugging Face API data to a common format. */
+        function transformHuggingFaceResults(models) {
+            return models.map(model => ({
+                platform: 'huggingface',
+                title: model.modelId,
+                url: `https://huggingface.co/${model.modelId}`,
+                description: model.cardData?.description || model.description || '',
+                meta: [
+                    { icon: 'fas fa-heart', value: model.likes?.toLocaleString() || 0 },
+                    model.pipeline_tag ? { icon: 'fas fa-tags', value: model.pipeline_tag } : null,
+                    { icon: 'fas fa-user', value: model.author || model.modelId.split('/')[0] },
+                    model.lastModified ? { icon: 'fas fa-clock', value: `Updated: ${new Date(model.lastModified).toLocaleDateString()}` } : null
+                ].filter(m => m !== null)
+            }));
+        }
+
+
+        /**
+         * Displays the combined results in the list.
+         * @param {Array} results - Array of combined and transformed result objects.
+         */
+        function displayCombinedResults(results) {
+            combinedResultsList.innerHTML = ''; // Clear previous results
+
+            if (!results || results.length === 0) {
+                // Message handled by the caller (handleSearchSubmit)
+                return;
+            }
+
+            // Optional: Sort results (e.g., by title, though relevance is hard without scores)
+            // results.sort((a, b) => a.title.localeCompare(b.title));
+
+            results.forEach(result => {
+                const listItem = document.createElement('li');
+                listItem.className = 'result-item';
+
+                // Determine platform icon class
+                let platformIconClass = '';
+                switch (result.platform) {
+                    case 'github': platformIconClass = 'fab fa-github'; break;
+                    case 'gitlab': platformIconClass = 'fab fa-gitlab'; break;
+                    case 'bitbucket': platformIconClass = 'fab fa-bitbucket'; break;
+                    case 'huggingface': platformIconClass = 'fas fa-robot'; break;
+                }
+
+                // Generate meta HTML
+                const metaHtml = result.meta.map(m => `
+                    <span><i class="${m.icon}"></i> ${escapeHtml(m.value)}</span>
+                `).join('');
+
+                listItem.innerHTML = `
+                    ${platformIconClass ? `<i class="platform-icon ${platformIconClass}" title="${result.platform}"></i>` : ''}
+                    <a href="${result.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(result.title)}</a>
+                    <p class="description">${result.description ? escapeHtml(result.description) : 'No description available.'}</p>
+                    <div class="meta">
+                        ${metaHtml}
+                    </div>
+                `;
+                combinedResultsList.appendChild(listItem);
+            });
+        }
+
+        /** Shows or hides the main loading indicator. */
+        function showLoading(isLoading) {
+            loadingIndicator.classList.toggle('hidden', !isLoading);
+        }
+
+        /** Displays the general error message below the search bar. */
+        function showError(message) {
+            errorMessageDiv.textContent = message;
+            errorMessageDiv.classList.remove('hidden');
+        }
+
+        /** Displays a message in the results area (e.g., "No results found"). */
+        function showResultsMessage(message) {
+            resultsMessage.textContent = message;
+            resultsMessage.classList.remove('hidden');
+        }
+
+        /** Clears previous search results and all error/status messages. */
+        function clearResultsAndErrors() {
+            errorMessageDiv.classList.add('hidden');
+            errorMessageDiv.textContent = '';
+            combinedResultsList.innerHTML = ''; // Clear the combined list
+            resultsMessage.classList.add('hidden'); // Hide the no-results message
+            resultsMessage.textContent = '';
+            // Don't hide resultsArea itself, handleSearchSubmit manages its visibility
+        }
+
+        /** Escapes HTML characters to prevent XSS. */
+        function escapeHtml(str) {
+            str = String(str || '');
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return str.replace(/[&<>"']/g, m => map[m]);
+        }
+
+    </script>
+
+</body>
+</html>
