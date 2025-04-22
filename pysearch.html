@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyPI Package Dependency Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        /* Dependency Tree Styling */
+        .dependency-list {
+            list-style: none;
+            padding-left: 1.5rem; /* Indentation for nested lists */
+            position: relative; /* For connecting lines */
+        }
+        /* Connecting lines (visual enhancement) */
+        .dependency-list::before {
+            content: "";
+            position: absolute;
+            left: 0.75rem; /* Adjust horizontal position */
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background-color: #d1d5db; /* Tailwind gray-300 */
+        }
+        .dependency-item-container {
+            position: relative; /* For connecting lines */
+            margin-bottom: 0.5rem; /* Spacing between items */
+        }
+        /* Horizontal line connecting to the vertical line */
+        .dependency-item-container::before {
+            content: "";
+            position: absolute;
+            left: -0.75rem; /* Connect to the vertical line */
+            top: 1.125rem; /* Align vertically with the middle of the button/text */
+            width: 0.75rem;
+            height: 1px;
+            background-color: #d1d5db; /* Tailwind gray-300 */
+        }
+        /* Hide connecting lines for the root list */
+        #dependency-tree::before,
+        #dependency-tree > .dependency-item-container::before {
+            display: none;
+        }
+
+        .dependency-item {
+            background-color: #ffffff; /* White background for items */
+            border: 1px solid #e5e7eb; /* Tailwind gray-200 */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            padding: 0.75rem 1rem; /* Padding inside items */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s ease-in-out;
+        }
+         .dependency-item:hover {
+             background-color: #f9fafb; /* Tailwind gray-50 */
+         }
+        .dependency-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-grow: 1;
+            min-width: 0; /* Prevent overflow */
+        }
+         .package-name {
+            font-weight: 500; /* medium */
+            color: #111827; /* gray-900 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+         }
+        .expand-button {
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem; /* Slightly less rounded */
+            background-color: #e5e7eb; /* Tailwind gray-200 */
+            color: #4b5563; /* Tailwind gray-600 */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            width: 1.5rem;
+            height: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem; /* Smaller icon */
+            flex-shrink: 0;
+            margin-left: 0.5rem;
+        }
+        .expand-button:hover {
+            background-color: #d1d5db; /* Tailwind gray-300 */
+        }
+        .expand-button .fa-chevron-right { transition: transform 0.2s ease-in-out; }
+        .expand-button.expanded .fa-chevron-right { transform: rotate(90deg); }
+
+        .version-spec {
+            font-size: 0.875rem; /* text-sm */
+            color: #6b7280; /* Tailwind gray-500 */
+            margin-left: 0.5rem;
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis if too long */
+            max-width: 250px; /* Limit width of version spec */
+        }
+        .error-message {
+            color: #ef4444; /* Tailwind red-500 */
+            background-color: #fee2e2; /* Tailwind red-100 */
+            border: 1px solid #fca5a5; /* Tailwind red-300 */
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem; /* rounded-md */
+            margin-top: 1rem;
+        }
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            color: #4b5563; /* Tailwind gray-600 */
+        }
+        .spinner {
+            border: 4px solid #f3f4f6; /* Light grey */
+            border-top: 4px solid #3b82f6; /* Blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Sublist styling */
+        .sub-list {
+             margin-top: 0.5rem; /* Space between item and its sublist */
+        }
+        /* Mini loader inside expanding item */
+        .mini-loader {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: #6b7280; /* gray-500 */
+            padding: 0.5rem 0 0.5rem 0.5rem; /* Adjust padding */
+        }
+        .mini-spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #60a5fa; /* Lighter blue */
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+        /* Hide elements */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 text-center">PyPI Package Dependency Explorer</h1>
+
+        <form id="search-form" class="mb-6 space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div class="md:col-span-2">
+                    <label for="package-name" class="block text-sm font-medium text-gray-700 mb-1">Package Name</label>
+                    <input type="text" id="package-name" name="package-name" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="e.g., requests, flask">
+                </div>
+                <div>
+                    <label for="package-version" class="block text-sm font-medium text-gray-700 mb-1">Version (optional)</label>
+                    <input type="text" id="package-version" name="package-version"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="e.g., 2.28.1 or latest">
+                </div>
+            </div>
+
+            <div class="pt-2">
+                 <button type="submit"
+                         class="w-full md:w-auto px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
+                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                       </svg>
+                     Search PyPI Dependencies
+                 </button>
+            </div>
+        </form>
+
+        <div id="loading" class="loading-indicator hidden">
+             <div class="spinner"></div>
+             <span>Loading dependencies...</span>
+        </div>
+
+        <div id="error-message" class="error-message hidden"></div>
+
+        <div id="results" class="mt-6">
+             <h2 id="results-title" class="text-xl font-semibold mb-4 text-gray-700 hidden">Dependencies for <span id="searched-package" class="font-bold"></span></h2>
+             <ul id="dependency-tree" class="dependency-list">
+                 </ul>
+             <p id="no-dependencies-message" class="text-gray-500 italic mt-4 hidden">No dependencies found for this package version.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const searchForm = document.getElementById('search-form');
+        const packageNameInput = document.getElementById('package-name');
+        const packageVersionInput = document.getElementById('package-version');
+        const loadingIndicator = document.getElementById('loading');
+        const errorMessageDiv = document.getElementById('error-message');
+        const resultsDiv = document.getElementById('results');
+        const resultsTitle = document.getElementById('results-title');
+        const searchedPackageSpan = document.getElementById('searched-package');
+        const dependencyTreeUl = document.getElementById('dependency-tree');
+        const noDependenciesMessage = document.getElementById('no-dependencies-message');
+
+        // --- State ---
+        let activeFetches = new Set(); // Track active fetches to prevent redundant calls
+
+        // --- Constants ---
+        const MAX_DEPTH = 10; // Increased recursion depth limit
+
+        // --- Event Listeners ---
+        searchForm.addEventListener('submit', handleSearchSubmit);
+
+        // --- Functions ---
+
+        /**
+         * Handles the main search form submission.
+         * @param {Event} event - The form submission event.
+         */
+        async function handleSearchSubmit(event) {
+            event.preventDefault();
+            clearResultsAndErrors();
+            showLoading(true);
+            noDependenciesMessage.classList.add('hidden'); // Hide no deps message
+
+            const packageName = packageNameInput.value.trim();
+            let packageVersion = packageVersionInput.value.trim() || 'latest'; // Default to latest
+
+            // Basic input validation
+            if (!packageName) {
+                showError("Please enter a package name.");
+                showLoading(false);
+                return;
+            }
+
+            // Update title immediately (will be updated again if 'latest' resolves)
+            searchedPackageSpan.textContent = `${packageName}${packageVersion !== 'latest' ? ` (${packageVersion})` : ' (latest)'}`;
+            resultsTitle.classList.remove('hidden');
+
+            // Start fetching and displaying dependencies for the root package
+            try {
+                await fetchAndDisplayDependencies(packageName, packageVersion, dependencyTreeUl, 0);
+            } catch (error) {
+                 // Catch errors specifically from the initial fetch
+                 console.error("Initial fetch failed:", error);
+                 showError(`Error fetching initial dependencies: ${error.message}`);
+                 resultsTitle.classList.add('hidden'); // Hide title on initial error
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * Fetches package information from PyPI and initiates the display of its dependencies.
+         * Handles 'latest' version resolution.
+         * @param {string} packageName - The name of the package.
+         * @param {string} packageVersion - The version ('latest' or specific).
+         * @param {HTMLElement} parentListElement - The UL element to append dependencies to.
+         * @param {number} depth - The current recursion depth.
+         */
+        async function fetchAndDisplayDependencies(packageName, packageVersion, parentListElement, depth) {
+            // Prevent excessive recursion or duplicate fetches for the same package/version/depth
+            const fetchKey = `pip:${packageName}@${packageVersion}:${depth}`; // Simplified key for PyPI only
+            if (activeFetches.has(fetchKey) || depth > MAX_DEPTH) {
+                if (depth > MAX_DEPTH) console.warn(`Max recursion depth (${MAX_DEPTH}) reached for ${packageName}`);
+                return;
+            }
+            activeFetches.add(fetchKey);
+
+            // Show a mini-loader within the expanding item if it's not the root level
+            let miniLoader = null;
+            if (depth > 0) { // Only show mini-loader for sub-dependencies
+                miniLoader = createMiniLoader();
+                parentListElement.appendChild(miniLoader);
+            }
+
+            let dependencies = [];
+            let actualVersionFetched = packageVersion; // Track the version resolved
+
+            try {
+                // --- API Call Logic for PyPI ---
+                let versionToFetch = packageVersion;
+                // --- Handle 'latest' for PyPI ---
+                if (packageVersion.toLowerCase() === 'latest') {
+                    const latestVersionUrl = `https://pypi.org/pypi/${packageName}/json`;
+                    console.log(`Fetching latest version info from: ${latestVersionUrl}`);
+                    const latestResponse = await fetch(latestVersionUrl);
+                    if (!latestResponse.ok) throw await generateApiError(latestResponse, packageName, 'latest', 'PyPI (latest lookup)');
+                    const latestData = await latestResponse.json();
+                    versionToFetch = latestData.info?.version;
+                    if (!versionToFetch) throw new Error(`Could not determine latest version for ${packageName} on PyPI.`);
+                    actualVersionFetched = versionToFetch; // Update the version we actually used
+                    console.log(`Latest version for ${packageName} is ${actualVersionFetched}`);
+                     // Update title if it's the root call and was 'latest'
+                     if (depth === 0) {
+                         searchedPackageSpan.textContent = `${packageName} (${actualVersionFetched})`;
+                     }
+                }
+                // --- Fetch dependencies for the specific (or resolved latest) version ---
+                const apiUrl = `https://pypi.org/pypi/${packageName}/${versionToFetch}/json`;
+                console.log(`Fetching dependencies from: ${apiUrl}`);
+                const response = await fetch(apiUrl);
+                // Handle 404 specifically for the version fetch
+                if (response.status === 404) {
+                    throw new Error(`Version '${versionToFetch}' not found for package '${packageName}' on PyPI.`);
+                }
+                if (!response.ok) throw await generateApiError(response, packageName, versionToFetch, 'PyPI');
+                const data = await response.json();
+                dependencies = data.info?.requires_dist || [];
+                actualVersionFetched = data.info?.version || actualVersionFetched; // Confirm actual version
+
+
+                // --- Display Logic ---
+                miniLoader?.remove(); // Remove mini-loader if it existed
+
+                if (dependencies.length === 0) {
+                    // Show "No dependencies" message only if it's the root call
+                    if (depth === 0) {
+                        noDependenciesMessage.classList.remove('hidden');
+                    } else {
+                        // For sub-items, show a small inline message
+                         const noDepsLi = document.createElement('li');
+                         noDepsLi.textContent = 'No further dependencies.';
+                         noDepsLi.className = 'text-sm text-gray-500 italic pl-0 py-1'; // No extra indent needed here
+                         parentListElement.appendChild(noDepsLi);
+                    }
+                } else {
+                     // Hide "No dependencies" message if we found some at the root
+                     if (depth === 0) {
+                         noDependenciesMessage.classList.add('hidden');
+                     }
+                    // Render the dependencies found, passing the incremented depth
+                    renderDependencyItems(dependencies, parentListElement, depth + 1);
+                }
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                miniLoader?.remove(); // Remove loader on error
+                // Display error message within the expanding item or globally
+                const errorMessageText = `Error loading dependencies for ${packageName}${actualVersionFetched !== 'latest' ? ` (${actualVersionFetched})` : ''}: ${error.message}`;
+                if (depth === 0) {
+                    showError(errorMessageText); // Show global error for root fetch failure
+                    resultsTitle.classList.add('hidden'); // Hide title as fetch failed
+                } else {
+                     const errorLi = document.createElement('li');
+                     errorLi.textContent = errorMessageText;
+                     errorLi.className = 'text-sm text-red-600 italic pl-0 py-1';
+                     parentListElement.appendChild(errorLi);
+                }
+                 // Rethrow error for the initial call to be caught by handleSearchSubmit
+                 if (depth === 0) throw error;
+            } finally {
+                 activeFetches.delete(fetchKey); // Clean up active fetch tracking
+            }
+        }
+
+        /**
+         * Helper to generate more specific API error messages for PyPI.
+         */
+         async function generateApiError(response, name, version, apiName) {
+             let message = `API Error (${response.status}) for ${name}`;
+             if (response.status === 404) {
+                 // Check if it was a 'latest' lookup that failed initially
+                  if (version === 'latest' && apiName.includes('latest lookup')) {
+                     message = `Package '${name}' not found on PyPI. Cannot determine latest version.`;
+                  } else {
+                     message = `Package '${name}' (version: ${version}) not found on ${apiName}.`;
+                  }
+             } else {
+                 try { // Try to get more details from the response body
+                     const errorData = await response.json();
+                     message = `${apiName} API Error (${response.status}) for ${name}: ${errorData.message || response.statusText}`;
+                 } catch (e) {
+                     // Use status text if response body is not JSON or empty
+                     message = `${apiName} API Error (${response.status}) for ${name}: ${response.statusText}`;
+                 }
+             }
+             return new Error(message);
+         }
+
+
+        /**
+         * Parses dependency strings and creates the list items in the DOM for PyPI.
+         * @param {string[]} dependencies - Array of dependency strings from requires_dist.
+         * @param {HTMLElement} parentListElement - The UL element to append items to.
+         * @param {number} depth - The current recursion depth for child fetches.
+         */
+        function renderDependencyItems(dependencies, parentListElement, depth) {
+            // Regex for Pip: package_name optional_extras (version_spec) ; markers
+            const pipDepRegex = /^([a-zA-Z0-9._-]+)(?:\[([^\]]+)\])?\s*(?:\(([^)]*)\))?.*?$/;
+
+            dependencies.forEach(depString => {
+                let depName = '';
+                let depVersionSpec = '';
+                let isExpandable = true; // Assume expandable unless marked otherwise
+
+                // Handle environment markers - display but don't make expandable
+                if (depString.includes(';')) {
+                     console.log("Displaying Pip dependency with environment marker:", depString);
+                     depName = depString.split(';')[0].trim().split(/[=<>!~[ (]/)[0].trim();
+                     depVersionSpec = depString; // Show the full string including the marker
+                     isExpandable = false;
+                } else {
+                     const match = depString.match(pipDepRegex);
+                     if (match) {
+                         depName = match[1];
+                         const extras = match[2] ? `[${match[2]}]` : '';
+                         const version = match[3] ? `(${match[3].trim()})` : '';
+                         depVersionSpec = `${extras}${version}`.trim();
+                     } else {
+                         console.warn("Could not parse Pip dependency string:", depString);
+                         depName = depString.split(/[=<>!~[ (]/)[0].trim(); // Best effort guess
+                         depVersionSpec = depString; // Show raw string if parse fails
+                     }
+                }
+
+                 if (!depName) return; // Skip if we couldn't determine a name
+
+                // --- Create DOM Elements ---
+                const itemContainer = document.createElement('li');
+                itemContainer.className = 'dependency-item-container';
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'dependency-item';
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'dependency-info';
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = depName;
+                nameSpan.className = 'package-name';
+                nameSpan.title = depName; // Tooltip for long names
+                const versionSpan = document.createElement('span');
+                versionSpan.textContent = depVersionSpec;
+                versionSpan.className = 'version-spec';
+                versionSpan.title = depVersionSpec; // Tooltip for long specs
+                infoDiv.appendChild(nameSpan);
+                infoDiv.appendChild(versionSpan);
+                itemDiv.appendChild(infoDiv);
+
+                // Add expand button and sublist container ONLY if expandable
+                if (isExpandable) {
+                    const expandButton = document.createElement('button');
+                    expandButton.className = 'expand-button';
+                    expandButton.title = `Load dependencies for ${depName}`;
+                    expandButton.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    const subList = document.createElement('ul');
+                    subList.className = 'dependency-list sub-list hidden';
+
+                    expandButton.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent event bubbling
+                        const isExpanded = !subList.classList.toggle('hidden');
+                        expandButton.classList.toggle('expanded', isExpanded);
+                        // Fetch sub-dependencies if expanding and list is empty
+                        if (isExpanded && subList.children.length === 0) {
+                            // Always fetch 'latest' for sub-dependencies for simplicity and robustness
+                            // Pass the correct depth here
+                            fetchAndDisplayDependencies(depName, 'latest', subList, depth); // Pass depth, not depth+1
+                        }
+                    });
+                    itemDiv.appendChild(expandButton); // Add button to item div
+                    itemContainer.appendChild(itemDiv); // Add item div first
+                    itemContainer.appendChild(subList); // Then add hidden sublist
+                } else {
+                    // If not expandable, just add the item div
+                    itemContainer.appendChild(itemDiv);
+                }
+
+                parentListElement.appendChild(itemContainer); // Add the container to the list
+            });
+        }
+
+        /** Shows or hides the main loading indicator. */
+        function showLoading(isLoading) {
+            loadingIndicator.classList.toggle('hidden', !isLoading);
+        }
+
+        /** Displays an error message in the designated area. */
+        function showError(message) {
+            errorMessageDiv.textContent = message;
+            errorMessageDiv.classList.remove('hidden');
+        }
+
+        /** Clears previous search results and error messages. */
+        function clearResultsAndErrors() {
+            dependencyTreeUl.innerHTML = ''; // Clear the main tree
+            errorMessageDiv.classList.add('hidden');
+            errorMessageDiv.textContent = '';
+            resultsTitle.classList.add('hidden'); // Hide results title until successful fetch
+            noDependenciesMessage.classList.add('hidden');
+            activeFetches.clear(); // Clear fetch tracking
+        }
+
+         /** Creates a small inline loading indicator for expanding items. */
+        function createMiniLoader() {
+            const loaderWrapper = document.createElement('div');
+            loaderWrapper.className = 'mini-loader';
+            const spinner = document.createElement('div');
+            spinner.className = 'mini-spinner';
+            loaderWrapper.appendChild(spinner);
+            loaderWrapper.appendChild(document.createTextNode('Loading...'));
+            return loaderWrapper;
+        }
+
+    </script>
+
+</body>
+</html>
