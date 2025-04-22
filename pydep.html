@@ -3,186 +3,373 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyPI Package Dependency Explorer</title>
+    <title>PyDep Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* --- Base & Layout --- */
+        :root {
+            --bg-color: #f7f9fc; /* Light cool gray */
+            --card-bg: rgba(255, 255, 255, 0.85); /* Translucent white */
+            --text-primary: #1a202c; /* Dark gray */
+            --text-secondary: #4a5568; /* Medium gray */
+            --accent-color: #4299e1; /* Blue */
+            --border-color: #e2e8f0; /* Light gray border */
+        }
+        html, body {
+            height: 100%;
+        }
         body {
-            font-family: 'Inter', sans-serif; /* Default font */
-            background-color: #ffffff;
-            color: #202124;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scroll */
         }
         .main-content {
              flex-grow: 1;
-             padding: 1rem;
+             padding: 2rem 1rem; /* More vertical padding */
+             display: flex;
+             flex-direction: column;
+             align-items: center; /* Center content */
+             width: 100%;
         }
         .container {
-            max-width: 48rem;
+            width: 100%;
+            max-width: 42rem; /* Slightly narrower for focus */
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* --- Search Header --- */
-        .search-header {
-            padding: 1.5rem 0; /* Increased padding */
-            border-bottom: 1px solid #ebebeb;
+        /* --- Animations --- */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- Search Section --- */
+        .search-container {
+            width: 100%;
+            margin-bottom: 2.5rem;
+            animation: slideUp 0.6s ease-out;
+        }
+        .logo {
+            font-size: 2.5rem; /* Increased size */
+            font-weight: 700;
+            text-align: center;
             margin-bottom: 1.5rem;
+            /* Color is applied per letter */
+            font-family: 'Inter', sans-serif; /* Keep clean font, apply colors */
+            letter-spacing: -1px; /* Slightly tighter spacing */
         }
-        .search-header .container {
-             /* Container handles centering */
-        }
-        .search-header-logo { /* Styling for the "PyDep" text */
-             font-family: 'Press Start 2P', cursive; /* Apply NEW font */
-             font-size: 2.2rem; /* Adjust size for new font */
-             text-align: center; /* Center the logo */
-             margin-bottom: 1.5rem; /* Space below logo */
-             /* Individual letter colors - NEW PALETTE */
-             line-height: 1.2; /* Adjust line height for pixel font */
-        }
-        .search-header-logo .char-p { color: #34d399; } /* Emerald-400 */
-        .search-header-logo .char-y { color: #fbbf24; } /* Amber-400 */
-        .search-header-logo .char-d { color: #60a5fa; } /* Blue-400 */
-        .search-header-logo .char-e { color: #f87171; } /* Red-400 */
-        .search-header-logo .char-p2 { color: #a78bfa; } /* Violet-400 */
-
-
-        #search-form-container { /* Center the search form */
-             max-width: 36rem; /* Slightly narrower than main container */
-             margin: 0 auto;
-        }
+        /* Colorful logo letters */
+        .logo .char-p1 { color: #4285F4; } /* Blue */
+        .logo .char-y { color: #DB4437; } /* Red */
+        .logo .char-d { color: #F4B400; } /* Yellow */
+        .logo .char-e { color: #4285F4; } /* Blue */
+        .logo .char-p2 { color: #0F9D58; } /* Green */
 
         #search-form {
             display: flex;
             align-items: center;
-            border: 1px solid #dfe1e5;
-            border-radius: 9999px;
-            padding: 0.5rem 1rem;
-            background-color: #ffffff;
-            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
-            transition: box-shadow 0.2s ease;
-            width: 100%; /* Ensure form takes width of its container */
+            background-color: var(--card-bg);
+            border-radius: 9999px; /* Pill shape */
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            border: 1px solid transparent; /* Placeholder for focus */
+            backdrop-filter: blur(10px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(10px);
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
         }
-        #search-form:hover,
         #search-form:focus-within {
-             box-shadow: 0 2px 8px rgba(32, 33, 36, 0.15);
+            box-shadow: 0 6px 20px rgba(66, 153, 225, 0.2); /* Blue shadow on focus */
+            border-color: rgba(66, 153, 225, 0.4);
         }
         #package-name, #package-version {
             border: none;
             outline: none;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.95rem;
+            padding: 0.5rem;
+            font-size: 1rem;
             background: transparent;
+            color: var(--text-primary);
+        }
+        #package-name::placeholder, #package-version::placeholder {
+            color: #a0aec0; /* Gray-400 */
         }
         #package-name {
             flex-grow: 1;
         }
         #package-version {
-            width: 120px;
-            border-left: 1px solid #dfe1e5;
-            margin-left: 0.5rem;
-            padding-left: 0.75rem;
+            width: 110px; /* Slightly smaller */
+            text-align: right;
+            padding-right: 0.75rem;
         }
         .search-button {
-            background: transparent;
+            background-color: var(--accent-color);
+            color: white;
             border: none;
-            color: #4285f4;
+            border-radius: 50%; /* Circle button */
+            width: 2.5rem;
+            height: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            padding: 0.5rem;
             margin-left: 0.5rem;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            box-shadow: 0 2px 5px rgba(66, 153, 225, 0.3);
         }
-        .search-button i { font-size: 1.1rem; }
+        .search-button:hover {
+            background-color: #2b6cb0; /* Darker blue */
+        }
+        .search-button:active {
+            transform: scale(0.95);
+        }
+        .search-button i { font-size: 1rem; }
 
         /* --- Results Area --- */
-        .results-area { }
+        .results-area {
+            width: 100%;
+            animation: fadeIn 0.5s 0.2s ease-out forwards; /* Fade in after load */
+            opacity: 0; /* Start hidden */
+        }
         .results-title {
             font-size: 1.1rem;
             font-weight: 600;
-            color: #1a0dab;
-            margin-bottom: 0.5rem;
-        }
-        .results-count {
-            color: #70757a;
-            font-size: 0.875rem;
+            color: var(--text-secondary);
             margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .results-title .font-bold {
+             color: var(--text-primary);
         }
 
-        /* --- Dependency Result Item --- */
+        /* --- Dependency Item --- */
         .dependency-list { list-style: none; padding: 0; margin: 0; }
-        .dependency-item-container { margin-bottom: 1.75rem; padding-left: 0; }
-        .dependency-item { padding: 0; display: block; }
-        .dependency-info { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem; }
-         .package-name { font-size: 1.25rem; color: #1a0dab; font-weight: 400; text-decoration: none; display: inline-block; }
-         .package-name:hover { text-decoration: underline; }
-        .version-spec { font-size: 0.875rem; color: #4d5156; background-color: transparent; padding: 0; border-radius: 0; font-family: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
-        .dependency-actions { margin-top: 0.5rem; }
-        .view-deps-button { background-color: #f8f9fa; border: 1px solid #f8f9fa; border-radius: 4px; color: #3c4043; font-size: 0.8rem; padding: 0.25rem 0.6rem; cursor: pointer; transition: border-color 0.2s ease, box-shadow 0.2s ease; display: inline-flex; align-items: center; gap: 0.25rem; }
-        .view-deps-button:hover { border-color: #dadce0; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-        .view-deps-button i { transition: transform 0.2s ease-in-out; }
-        .view-deps-button.loading i { animation: spin 1s linear infinite; }
-        .view-deps-button.expanded i { transform: rotate(90deg); }
+        .dependency-item-container {
+            background-color: var(--card-bg);
+            border-radius: 0.75rem; /* rounded-xl */
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            overflow: hidden; /* Ensure border radius clips content */
+            animation: slideUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        /* Stagger animation */
+        .dependency-item-container:nth-child(1) { animation-delay: 0.1s; }
+        .dependency-item-container:nth-child(2) { animation-delay: 0.15s; }
+        .dependency-item-container:nth-child(3) { animation-delay: 0.2s; }
+        .dependency-item-container:nth-child(4) { animation-delay: 0.25s; }
+        .dependency-item-container:nth-child(5) { animation-delay: 0.3s; }
+        /* Add more if needed */
+
+        .dependency-item {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .dependency-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* More gap */
+            flex-grow: 1;
+            min-width: 0;
+        }
+         .package-name {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+         }
+         .package-name-link {
+             color: var(--accent-color);
+             text-decoration: none;
+             transition: color 0.2s ease;
+         }
+         .package-name-link:hover {
+             color: #2b6cb0; /* Darker blue */
+             text-decoration: underline;
+         }
+        .version-spec {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            background-color: rgba(226, 232, 240, 0.5); /* Translucent Slate-200 */
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px; /* Pill shape */
+            font-family: monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .expand-deps-button {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 50%; /* Circle button */
+            width: 2rem;
+            height: 2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-left: 0.75rem;
+            transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.3s ease;
+        }
+        .expand-deps-button:hover {
+            background-color: rgba(226, 232, 240, 0.5); /* Translucent hover */
+            border-color: #cbd5e1; /* Slate-300 */
+        }
+        .expand-deps-button i {
+            font-size: 0.75rem;
+            transition: transform 0.3s ease;
+        }
+        .expand-deps-button.loading i {
+            animation: spin 1s linear infinite;
+        }
+        .expand-deps-button.expanded i {
+            transform: rotate(90deg);
+        }
+         .expand-deps-button.no-deps {
+             cursor: default;
+             opacity: 0.5;
+         }
 
         /* --- Sub-Dependency List --- */
-        .sub-list { list-style: none; margin-top: 0.75rem; padding-left: 1.5rem; border-left: 2px solid #ebebeb; max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding-top 0.4s ease-out, padding-bottom 0.4s ease-out; padding-top: 0; padding-bottom: 0; }
-        .sub-list.visible { padding-top: 0.75rem; padding-bottom: 0.25rem; }
-         .sub-list .package-name { font-size: 1.1rem; }
-         .sub-list .version-spec { font-size: 0.8rem; }
-         .sub-list .dependency-item-container { margin-bottom: 1rem; }
-         .sub-list .view-deps-button { font-size: 0.75rem; padding: 0.2rem 0.5rem;}
+        .sub-list {
+            list-style: none;
+            padding: 0 1.25rem 0.75rem 3rem; /* Indent more, add bottom padding */
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, padding-top 0.4s ease-out, padding-bottom 0.4s ease-out;
+            border-top: 1px dashed var(--border-color); /* Dashed separator */
+            margin-top: 0.75rem; /* Space above separator */
+        }
+        .sub-list.visible {
+            padding-top: 0.75rem;
+            /* max-height set by JS */
+        }
+         /* Style sub-list items */
+         .sub-list .dependency-item-container {
+             background: none;
+             border: none;
+             box-shadow: none;
+             margin-bottom: 0.5rem;
+             animation: none; /* No entry animation for sub-items */
+             opacity: 1;
+         }
+         .sub-list .dependency-item {
+             padding: 0.5rem 0; /* Less padding */
+         }
+         .sub-list .package-name { font-size: 0.95rem; }
+         .sub-list .version-spec { font-size: 0.75rem; max-width: 150px; }
+         .sub-list .expand-deps-button { width: 1.75rem; height: 1.75rem; }
+         .sub-list .expand-deps-button i { font-size: 0.65rem; }
+
 
         /* --- Other UI Elements --- */
-        .error-message { color: #d93025; background-color: #fce8e6; border: 1px solid #f9c6c2; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-top: 1rem; text-align: center; }
-        .loading-indicator { display: flex; align-items: center; justify-content: center; padding: 1.5rem; color: #70757a; margin-top: 1rem; }
-        .spinner { border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #4285f4; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin-right: 0.75rem; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .mini-loader { font-size: 0.875rem; color: #70757a; padding: 0.5rem 0; }
-        #no-dependencies-message { text-align: center; padding: 1rem; color: #70757a; font-style: italic; margin-top: 1rem; }
-        .hidden { display: none; }
-        footer { flex-shrink: 0; margin-top: 2rem; padding: 1.5rem 1rem; text-align: center; font-size: 0.875rem; color: #70757a; background-color: #f2f2f2; border-top: 1px solid #e4e4e4; }
+        .error-message {
+            color: #c53038; /* Red-700 */
+            background-color: #fed7d7; /* Red-100 */
+            border: 1px solid #fbb6ce; /* Red-200 */
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .spinner {
+            border: 3px solid rgba(66, 153, 225, 0.2); /* Light blue border */
+            border-top: 3px solid var(--accent-color); /* Blue */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.75rem;
+        }
+        .mini-loader { /* Used inside sub-list */
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.5rem 0;
+            text-align: center;
+        }
+        #no-dependencies-message {
+             text-align: center;
+             padding: 1rem;
+             color: var(--text-secondary);
+             font-style: italic;
+             margin-top: 1rem;
+        }
+        .hidden {
+            display: none !important; /* Ensure hidden overrides other styles */
+        }
+        footer {
+             flex-shrink: 0;
+             margin-top: 3rem; /* More space above footer */
+             padding: 1.5rem 1rem;
+             text-align: center;
+             font-size: 0.875rem;
+             color: #718096; /* Gray-500 */
+             background-color: transparent; /* Cleaner look */
+             border-top: 1px solid var(--border-color);
+        }
     </style>
 </head>
 <body>
 
-    <header class="search-header">
-        <div class="container">
-            <div class="search-header-logo">
-                <span class="char-p">P</span><span class="char-y">y</span><span class="char-d">D</span><span class="char-e">e</span><span class="char-p2">p</span>
+    <div class="main-content">
+        <div class="container search-container">
+             <div class="logo">
+                 <span class="char-p1">P</span><span class="char-y">y</span><span class="char-d">D</span><span class="char-e">e</span><span class="char-p2">p</span>
+             </div>
+             <form id="search-form">
+                 <input type="text" id="package-name" name="package-name" required placeholder="Search PyPI package...">
+                 <input type="text" id="package-version" name="package-version" placeholder="latest">
+                 <button type="submit" class="search-button" title="Search">
+                     <i class="fas fa-search"></i>
+                 </button>
+             </form>
+        </div>
+
+        <div class="container results-container">
+            <div id="loading" class="loading-indicator hidden">
+                 <div class="spinner"></div>
+                 <span>Loading...</span>
             </div>
-            <div id="search-form-container">
-                <form id="search-form">
-                    <input type="text" id="package-name" name="package-name" required placeholder="Enter PyPI package name">
-                    <input type="text" id="package-version" name="package-version" placeholder="Version (latest)">
-                    <button type="submit" class="search-button" title="Search">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
+
+            <div id="error-message" class="error-message hidden"></div>
+
+            <div id="results" class="results-area hidden">
+                 <h2 id="results-title" class="results-title hidden">Dependencies for <span id="searched-package" class="font-bold"></span></h2>
+                 <ul id="dependency-tree" class="dependency-list">
+                     </ul>
+                 <p id="no-dependencies-message" class="hidden">No dependencies found for this package version.</p>
             </div>
         </div>
-    </header>
-
-    <div class="main-content container">
-        <div id="loading" class="loading-indicator hidden">
-             <div class="spinner"></div>
-             <span>Loading dependencies...</span>
-        </div>
-
-        <div id="error-message" class="error-message hidden"></div>
-
-        <div id="results" class="results-area hidden">
-             <h2 id="results-title" class="results-title hidden">Dependencies for <span id="searched-package" class="font-bold"></span></h2>
-             <ul id="dependency-tree" class="dependency-list">
-                 </ul>
-             <p id="no-dependencies-message" class="hidden">No dependencies found for this package version.</p>
-        </div>
-    </div>
-
-    <footer>
+    </div> <footer>
         ©&nbsp;2025&nbsp;Peter Aldrich Jr. All rights reserved.
     </footer>
 
@@ -196,14 +383,14 @@
         const resultsDiv = document.getElementById('results'); // Target the area
         const resultsTitle = document.getElementById('results-title');
         const searchedPackageSpan = document.getElementById('searched-package');
-        const dependencyTreeUl = document.getElementById('dependency-tree'); // This is now the main results list
+        const dependencyTreeUl = document.getElementById('dependency-tree'); // Main list
         const noDependenciesMessage = document.getElementById('no-dependencies-message');
 
         // --- State ---
         let activeFetches = new Set();
 
         // --- Constants ---
-        const MAX_DEPTH = 10; // Keep the increased depth
+        const MAX_DEPTH = 10;
 
         // --- Event Listeners ---
         searchForm.addEventListener('submit', handleSearchSubmit);
@@ -214,7 +401,8 @@
             event.preventDefault();
             clearResultsAndErrors();
             showLoading(true);
-            resultsDiv.classList.add('hidden'); // Hide results initially
+            resultsDiv.classList.add('hidden'); // Hide results for transition
+            resultsDiv.classList.remove('visible'); // Reset animation state
             noDependenciesMessage.classList.add('hidden');
 
             const packageName = packageNameInput.value.trim();
@@ -225,14 +413,14 @@
                 showLoading(false); return;
             }
 
-            // Update title (will be updated again if 'latest' resolves)
             searchedPackageSpan.textContent = `${packageName}${packageVersion !== 'latest' ? ` (${packageVersion})` : ' (latest)'}`;
 
             try {
-                // Fetch dependencies for the root package
                 await fetchAndDisplayDependencies(packageName, packageVersion, dependencyTreeUl, 0);
-                resultsTitle.classList.remove('hidden'); // Show title on success
-                resultsDiv.classList.remove('hidden'); // Show results area
+                resultsTitle.classList.remove('hidden');
+                resultsDiv.classList.remove('hidden'); // Make results visible
+                // Add class slightly later for entry animation
+                setTimeout(() => resultsDiv.classList.add('visible'), 50);
             } catch (error) {
                  console.error("Initial fetch failed:", error);
                  showError(`Error fetching initial dependencies: ${error.message}`);
@@ -251,17 +439,13 @@
             }
             activeFetches.add(fetchKey);
 
-            let miniLoader = null;
-            // If it's a sub-list fetch, find the button and show loading state
             let triggerButton = null;
             if (depth > 0) {
-                 triggerButton = parentListElement.previousElementSibling?.querySelector('.view-deps-button');
+                 triggerButton = parentListElement.previousElementSibling?.querySelector('.expand-deps-button');
                  if (triggerButton) {
-                     triggerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                     triggerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Spinner icon
                      triggerButton.disabled = true;
-                 } else {
-                    miniLoader = createMiniLoader(); // Fallback
-                    parentListElement.appendChild(miniLoader);
+                     triggerButton.classList.add('loading');
                  }
             }
 
@@ -290,7 +474,6 @@
                 dependencies = data.info?.requires_dist || [];
                 actualVersionFetched = data.info?.version || actualVersionFetched;
 
-                miniLoader?.remove(); // Remove inline loader if it was used
 
                 if (dependencies.length === 0) {
                     if (depth === 0) {
@@ -298,25 +481,24 @@
                     } else {
                          const noDepsLi = document.createElement('li');
                          noDepsLi.textContent = 'No further dependencies found.';
-                         noDepsLi.className = 'text-sm text-gray-500 italic py-1'; // Simple text message
+                         noDepsLi.className = 'text-sm text-gray-500 italic py-1 text-center'; // Center align
                          parentListElement.appendChild(noDepsLi);
                     }
-                     // Update button state if it was a sub-fetch
                      if (triggerButton) {
-                         triggerButton.innerHTML = '<i class="fas fa-info-circle"></i> No Dependencies'; // Indicate no deps
-                         triggerButton.disabled = true; // Keep disabled as there's nothing to hide
-                         triggerButton.classList.add('expanded'); // Mark as expanded (visually complete)
+                         triggerButton.innerHTML = '<i class="fas fa-minus"></i>'; // Show expanded state
+                         triggerButton.disabled = true; // Keep disabled
+                         triggerButton.classList.remove('loading');
+                         triggerButton.classList.add('expanded', 'no-deps');
                      }
                 } else {
                      if (depth === 0) {
                          noDependenciesMessage.classList.add('hidden');
                      }
-                    // Render the dependencies found
                     renderDependencyItems(dependencies, parentListElement, depth + 1);
-                     // Update button state if it was a sub-fetch
                      if (triggerButton) {
-                         triggerButton.innerHTML = '<i class="fas fa-minus"></i> Hide Dependencies';
+                         triggerButton.innerHTML = '<i class="fas fa-chevron-up"></i>'; // Icon for collapse
                          triggerButton.disabled = false;
+                         triggerButton.classList.remove('loading');
                          triggerButton.classList.add('expanded');
                      }
                 }
@@ -324,12 +506,15 @@
                  if (depth > 0 && parentListElement.children.length > 0) {
                      parentListElement.classList.add('visible');
                      parentListElement.style.maxHeight = parentListElement.scrollHeight + "px";
+                 } else if (depth > 0) {
+                     // If no children added (e.g., no deps found message), still mark as visible for padding
+                     parentListElement.classList.add('visible');
+                     parentListElement.style.maxHeight = parentListElement.scrollHeight + "px";
                  }
 
 
             } catch (error) {
                 console.error("Fetch error:", error);
-                miniLoader?.remove();
                 const errorMessageText = `Error: ${error.message}`;
                 if (depth === 0) {
                     showError(errorMessageText);
@@ -337,20 +522,24 @@
                 } else {
                      const errorLi = document.createElement('li');
                      errorLi.textContent = errorMessageText;
-                     errorLi.className = 'text-sm text-red-600 italic py-1';
+                     errorLi.className = 'text-sm text-red-600 italic py-1 text-center';
                      parentListElement.appendChild(errorLi);
-                      // Reset button on error
                       if (triggerButton) {
-                          triggerButton.innerHTML = '<i class="fas fa-chevron-down"></i> View Dependencies';
-                          triggerButton.disabled = false;
-                          triggerButton.classList.remove('expanded');
-                          parentListElement.classList.remove('visible'); // Hide list on error
+                          triggerButton.innerHTML = '<i class="fas fa-exclamation-circle"></i>'; // Error icon
+                          triggerButton.disabled = false; // Allow retry maybe? Or keep disabled? Let's allow retry.
+                          triggerButton.classList.remove('loading', 'expanded');
+                          parentListElement.classList.remove('visible');
                           parentListElement.style.maxHeight = '0';
                       }
                 }
                  if (depth === 0) throw error;
             } finally {
                  activeFetches.delete(fetchKey);
+                 // Ensure loader is removed if triggerButton wasn't found (fallback case)
+                 if (depth > 0 && !triggerButton) {
+                     const loader = parentListElement.querySelector('.mini-loader');
+                     loader?.remove();
+                 }
             }
         }
 
@@ -376,15 +565,15 @@
         function renderDependencyItems(dependencies, parentListElement, depth) {
             const pipDepRegex = /^([a-zA-Z0-9._-]+)(?:\[([^\]]+)\])?\s*(?:\(([^)]*)\))?.*?$/;
 
-            dependencies.forEach(depString => {
+            dependencies.forEach((depString, index) => {
                 let depName = '';
                 let depVersionSpec = '';
-                let isExpandable = true; // Assume expandable unless marked otherwise
+                let isExpandable = true;
 
                 if (depString.includes(';')) {
                      depName = depString.split(';')[0].trim().split(/[=<>!~[ (]/)[0].trim();
-                     depVersionSpec = depString; // Show full string with marker
-                     isExpandable = false; // Don't expand items with markers
+                     depVersionSpec = depString;
+                     isExpandable = false;
                 } else {
                      const match = depString.match(pipDepRegex);
                      if (match) {
@@ -396,90 +585,103 @@
                          console.warn("Could not parse dependency string:", depString);
                          depName = depString.split(/[=<>!~[ (]/)[0].trim();
                          depVersionSpec = depString;
-                         isExpandable = false; // Don't expand if parse fails
+                         isExpandable = false;
                      }
                 }
 
                  if (!depName) return;
 
-                // --- Create DOM Elements (Google Search Result Style) ---
+                // --- Create DOM Elements ---
                 const itemContainer = document.createElement('li');
                 itemContainer.className = 'dependency-item-container';
+                 // Stagger animation only for top-level results
+                 if (depth === 1) {
+                     itemContainer.style.animationDelay = `${index * 0.05}s`;
+                 } else {
+                     itemContainer.style.animation = 'none'; // No animation for sub-items
+                     itemContainer.style.opacity = '1';
+                 }
 
-                const itemDiv = document.createElement('div'); // Main container for this result item
+
+                const itemDiv = document.createElement('div');
                 itemDiv.className = 'dependency-item';
-
-                // Package Name (like a result title)
-                const nameLink = document.createElement('a');
-                nameLink.href = `https://pypi.org/project/${depName}/`; // Link to PyPI page
-                nameLink.target = '_blank'; // Open in new tab
-                nameLink.rel = 'noopener noreferrer';
-                nameLink.className = 'package-name';
-                nameLink.textContent = depName;
-
-                // Version Specifier (like URL/breadcrumb)
-                const versionSpan = document.createElement('span');
-                versionSpan.className = 'version-spec';
-                versionSpan.textContent = depVersionSpec || 'any'; // Show 'any' if no spec
-                versionSpan.title = depVersionSpec;
 
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'dependency-info';
-                infoDiv.appendChild(nameLink);
+
+                const nameLink = document.createElement('a');
+                nameLink.href = `https://pypi.org/project/${depName}/`;
+                nameLink.target = '_blank';
+                nameLink.rel = 'noopener noreferrer';
+                nameLink.className = 'package-name-link'; // Link style
+                nameLink.textContent = depName;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'package-name';
+                nameSpan.title = depName;
+                nameSpan.appendChild(nameLink); // Wrap name in link
+
+                const versionSpan = document.createElement('span');
+                versionSpan.className = 'version-spec';
+                versionSpan.textContent = depVersionSpec || 'any';
+                versionSpan.title = depVersionSpec;
+
+                infoDiv.appendChild(nameSpan);
                 infoDiv.appendChild(versionSpan);
 
                 itemDiv.appendChild(infoDiv);
 
-                // Actions (View Dependencies button)
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'dependency-actions';
-
-                // Sub-list container (initially hidden)
+                // Sub-list container (always add for structure)
                 const subList = document.createElement('ul');
                 subList.className = 'sub-list'; // Handles animation via CSS
 
                 if (isExpandable) {
-                    const viewDepsButton = document.createElement('button');
-                    viewDepsButton.className = 'view-deps-button';
-                    viewDepsButton.innerHTML = '<i class="fas fa-chevron-down"></i> View Dependencies';
-                    viewDepsButton.title = `Load dependencies for ${depName}`;
+                    const expandButton = document.createElement('button');
+                    expandButton.className = 'expand-deps-button';
+                    expandButton.innerHTML = '<i class="fas fa-chevron-down"></i>'; // Down arrow for expand
+                    expandButton.title = `View dependencies for ${depName}`;
 
-                    viewDepsButton.addEventListener('click', (e) => {
+                    expandButton.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const isExpanded = viewDepsButton.classList.toggle('expanded');
+                        const isExpanded = expandButton.classList.toggle('expanded');
                         subList.classList.toggle('visible', isExpanded);
 
                         if (isExpanded) {
-                             // Fetch only if list is empty
+                            expandButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Loading state
+                            expandButton.disabled = true;
+                            expandButton.classList.add('loading');
+                            // Fetch only if list is empty
                             if (subList.children.length === 0) {
-                                viewDepsButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...'; // Show loading state
-                                viewDepsButton.disabled = true;
                                 fetchAndDisplayDependencies(depName, 'latest', subList, depth);
                             } else {
-                                // If already loaded, just expand and update button
+                                // If already loaded, just expand
                                 subList.style.maxHeight = subList.scrollHeight + "px";
-                                viewDepsButton.innerHTML = '<i class="fas fa-minus"></i> Hide Dependencies';
+                                expandButton.innerHTML = '<i class="fas fa-chevron-up"></i>'; // Collapse icon
+                                expandButton.disabled = false;
+                                expandButton.classList.remove('loading');
                             }
                         } else {
                             // Collapse
                             subList.style.maxHeight = '0';
-                            viewDepsButton.innerHTML = '<i class="fas fa-chevron-down"></i> View Dependencies';
+                            expandButton.innerHTML = '<i class="fas fa-chevron-down"></i>'; // Expand icon
                         }
                     });
-                    actionsDiv.appendChild(viewDepsButton);
+                    itemDiv.appendChild(expandButton); // Add button to item div
                 } else {
-                     // Optionally add a note if not expandable due to marker
-                     if (depString.includes(';')) {
-                         const markerNote = document.createElement('span');
-                         markerNote.className = 'text-xs text-gray-400 italic ml-2';
-                         markerNote.textContent = '(Conditional dependency)';
-                         actionsDiv.appendChild(markerNote);
-                     }
+                     // Add a placeholder or disabled button for non-expandable items
+                     const placeholderButton = document.createElement('span');
+                     placeholderButton.className = 'expand-deps-button opacity-30 cursor-not-allowed'; // Visually disabled
+                     placeholderButton.innerHTML = '<i class="fas fa-minus"></i>'; // Indicate no action
+                      if (depString.includes(';')) {
+                          placeholderButton.title = "Conditional dependency - not expanded";
+                      } else {
+                          placeholderButton.title = "Cannot expand this item";
+                      }
+                     itemDiv.appendChild(placeholderButton);
                 }
 
-                itemDiv.appendChild(actionsDiv);
                 itemContainer.appendChild(itemDiv);
-                itemContainer.appendChild(subList); // Add sublist container after the main item div
+                itemContainer.appendChild(subList);
 
                 parentListElement.appendChild(itemContainer);
             });
@@ -502,12 +704,16 @@
             resultsTitle.classList.add('hidden');
             noDependenciesMessage.classList.add('hidden');
             resultsDiv.classList.add('hidden'); // Hide results section
+            resultsDiv.classList.remove('visible'); // Reset animation state
             activeFetches.clear();
         }
 
          function createMiniLoader() {
-            // No longer needed with button loading state
-            return null;
+            // Now using button state, but keep for potential fallback
+            const loaderWrapper = document.createElement('div');
+            loaderWrapper.className = 'mini-loader';
+            loaderWrapper.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading...';
+            return loaderWrapper;
          }
 
     </script>
