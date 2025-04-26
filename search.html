@@ -1,647 +1,680 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unified Dev & AI Search</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa; /* Lighter gray background */
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden; /* Prevent horizontal scroll */
-        }
-
-        /* --- Animations --- */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes searchBarMove {
-             0% {
-                 transform: translateY(calc(50vh - 50% - 7.5vh)); /* Approx center */
-                 width: 90%; /* Start wider */
-                 max-width: 600px;
-             }
-             100% {
-                 transform: translateY(0);
-                 width: 100%; /* Full width within wrapper */
-                 max-width: 600px;
-             }
-        }
-        @keyframes titleFadeOut {
-             from { opacity: 1; transform: scale(1); }
-             to { opacity: 0; transform: scale(0.9); }
-        }
-
-        /* --- Search Container & Form --- */
-        #search-container {
-            width: 100%;
-            padding: 0 1rem; /* Add horizontal padding */
-            transition: padding-top 0.5s ease-out, padding-bottom 0.5s ease-out;
-            display: flex; /* Use flex for alignment */
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-        }
-        #search-container.initial-state {
-            flex-grow: 1; /* Takes up available space */
-            padding-top: 0;
-            padding-bottom: 15vh; /* Push up slightly from true center */
-        }
-        #search-container.searched-state {
-            padding-top: 1.5rem;
-            padding-bottom: 1rem;
-            align-items: flex-start; /* Align items to top */
-        }
-
-        #search-form-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 600px; /* Limit search bar width */
-            /* Animation applied when moving to top */
-        }
-        #search-container.searched-state #search-form-wrapper {
-             /* Animation applied via JS class toggle */
-        }
-
-        #search-form {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            border: 1px solid #dfe1e5;
-            border-radius: 9999px; /* Fully rounded */
-            padding: 0.6rem 1.2rem; /* Slightly larger padding */
-            background-color: #ffffff;
-            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-            margin-bottom: 0.75rem; /* Space below search bar for filters */
-        }
-         #search-form:hover,
-         #search-form:focus-within {
-             box-shadow: 0 2px 8px rgba(32, 33, 36, 0.15);
-             border-color: #dadce0;
-         }
-         #search-input {
-            flex-grow: 1;
-            border: none;
-            outline: none;
-            padding: 0.5rem;
-            font-size: 1rem;
-            background: transparent;
-         }
-         #search-button {
-            background: transparent;
-            border: none;
-            color: #4285f4; /* Google blue */
-            cursor: pointer;
-            padding: 0.5rem;
-            margin-left: 0.5rem;
-            transition: transform 0.2s ease;
-         }
-         #search-button:hover {
-             transform: scale(1.1);
-         }
-         #search-button i {
-             font-size: 1.25rem;
-         }
-
-         /* Title Animation */
-         .initial-state-title {
-             transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-             transform-origin: bottom;
-         }
-         .initial-state-title.fade-out {
-             opacity: 0;
-             transform: scale(0.9);
-         }
-
-         /* Filter Controls Animation */
-         #filter-controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.5rem;
-            opacity: 0; /* Start hidden */
-            transition: opacity 0.5s 0.3s ease-out; /* Fade in after delay */
-         }
-         #filter-controls.visible {
-             opacity: 1;
-         }
-         .filter-button {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
-            border-radius: 9999px;
-            border: 1px solid #dfe1e5;
-            background-color: #f8f9fa;
-            color: #5f6368;
-            cursor: pointer;
-            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-         }
-         .filter-button:hover {
-            background-color: #f1f3f4;
-            border-color: #dadce0;
-            transform: translateY(-1px); /* Slight lift on hover */
-         }
-         .filter-button.active {
-            background-color: #e8f0fe;
-            border-color: #d2e3fc;
-            color: #1967d2;
-            font-weight: 500;
-         }
-
-        /* Results Area & List Animation */
-        #results-area {
-            padding: 1rem 1rem 2rem 1rem;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            opacity: 0; /* Start hidden */
-            animation: fadeIn 0.6s 0.2s ease-out forwards; /* Fade in after search bar moves */
-        }
-        .results-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            background-color: #ffffff;
-            border-radius: 0.5rem; /* rounded-lg */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        /* Individual Result Item Animation */
-        .result-item {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e8eaed;
-            transition: background-color 0.2s ease-in-out;
-            position: relative;
-            opacity: 0; /* Start hidden */
-            animation: slideUp 0.5s ease-out forwards;
-        }
-        /* Stagger animation delay for list items */
-        .result-item:nth-child(1) { animation-delay: 0.1s; }
-        .result-item:nth-child(2) { animation-delay: 0.15s; }
-        .result-item:nth-child(3) { animation-delay: 0.2s; }
-        .result-item:nth-child(4) { animation-delay: 0.25s; }
-        .result-item:nth-child(5) { animation-delay: 0.3s; }
-        /* Add more if expecting more results per page */
-        .result-item:nth-child(6) { animation-delay: 0.35s; }
-        .result-item:nth-child(7) { animation-delay: 0.4s; }
-        .result-item:nth-child(8) { animation-delay: 0.45s; }
-        .result-item:nth-child(9) { animation-delay: 0.5s; }
-        .result-item:nth-child(10) { animation-delay: 0.55s; }
-
-
-        .result-item:last-child {
-            border-bottom: none;
-        }
-        .result-item:hover {
-            background-color: #f0f3f5; /* Slightly darker hover */
-        }
-         .result-item .platform-icon {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 1.25rem; /* text-xl */
-            color: #adb5bd; /* gray-400 */
-            transition: transform 0.3s ease;
-         }
-         .result-item:hover .platform-icon {
-             transform: scale(1.1);
-         }
-        .result-item a {
-            color: #1a0dab; /* Google link blue */
-            text-decoration: none;
-            font-size: 1.125rem; /* text-lg */
-            display: block;
-            margin-bottom: 0.25rem;
-            padding-right: 2rem;
-            transition: color 0.2s ease;
-        }
-        .result-item a:hover {
-            text-decoration: underline;
-            color: #120a7a; /* Darker blue on hover */
-        }
-        .result-item .description {
-            color: #4d5156;
-            font-size: 0.875rem;
-            margin-bottom: 0.5rem;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            padding-right: 2rem;
-        }
-        .result-item .meta {
-            font-size: 0.875rem;
-            color: #70757a;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem 1rem;
-            padding-right: 2rem;
-        }
-         .result-item .meta span {
-             display: inline-flex;
-             align-items: center;
-             gap: 0.25rem;
-         }
-         .result-item .meta i {
-             color: #80868b;
-             width: 1em;
-             text-align: center;
-         }
-        .error-message {
-            color: #d93025;
-            background-color: #fce8e6;
-            border: 1px solid #f9c6c2;
-            padding: 0.75rem 1rem;
-            border-radius: 0.375rem;
-            margin-top: 1rem;
-            text-align: center;
-            animation: fadeIn 0.5s ease-out;
-        }
-        #results-message {
-             text-align: center;
-             color: #70757a;
-             padding: 1.5rem;
-             font-size: 1rem;
-             background-color: #ffffff;
-             border-radius: 0.5rem;
-             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-             margin-top: 1rem;
-             animation: fadeIn 0.5s ease-out;
-        }
-        .loading-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            color: #70757a;
-            font-size: 1rem;
-            text-align: center;
-            position: fixed; /* Make loader fixed */
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 10; /* Ensure it's above other content */
-            opacity: 0; /* Start hidden */
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .loading-indicator.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        .spinner {
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #4285f4;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            animation: spin 1s linear infinite;
-            margin-right: 0.75rem; /* Space between spinner and text */
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Hide elements */
-        .hidden {
-            display: none !important; /* Use important to override potential conflicts */
-        }
-
-    </style>
-</head>
-<body>
-
-    <div id="search-container" class="initial-state w-full px-4">
-        <div id="search-form-wrapper">
-             <h1 class="text-4xl font-bold text-gray-700 mb-6 text-center initial-state-title">
-                 <span class="text-blue-600">U</span><span class="text-red-600">n</span><span class="text-yellow-500">i</span><span class="text-blue-600">f</span><span class="text-green-600">i</span><span class="text-red-600">e</span>d Search
-             </h1>
-            <form id="search-form">
-                <input type="text" id="search-input" name="query" required placeholder="Search GitHub, GitLab, Bitbucket, Hugging Face...">
-                <button type="submit" id="search-button" title="Search">
-                    <i class="fas fa-search"></i>
-                </button>
-            </form>
-            <div id="filter-controls" class="hidden">
-                <button class="filter-button active" data-sort="relevant">Relevant</button>
-                <button class="filter-button" data-sort="updated">Updated</button>
-                <button class="filter-button" data-sort="likes">Likes/Stars</button>
-                <button class="filter-button" data-sort="downloads">Downloads</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="loading" class="loading-indicator">
-        <div class="spinner"></div>
-        <span>Searching...</span>
-    </div>
-
-    <div id="error-message" class="error-message hidden max-w-xl mx-auto"></div>
-
-    <div id="results-area" class="hidden">
-         <ul id="combined-results-list" class="results-list">
-             </ul>
-         <div id="results-message" class="hidden"></div>
-    </div>
-
-    <script>
-        // --- DOM Elements ---
-        const searchContainer = document.getElementById('search-container');
-        const searchFormWrapper = document.getElementById('search-form-wrapper');
-        const searchForm = document.getElementById('search-form');
-        const searchInput = document.getElementById('search-input');
-        const loadingIndicator = document.getElementById('loading');
-        const errorMessageDiv = document.getElementById('error-message');
-        const resultsArea = document.getElementById('results-area');
-        const initialStateTitle = document.querySelector('.initial-state-title');
-        const combinedResultsList = document.getElementById('combined-results-list');
-        const resultsMessage = document.getElementById('results-message');
-        const filterControls = document.getElementById('filter-controls');
-        const filterButtons = filterControls.querySelectorAll('.filter-button');
-
-        // --- Constants ---
-        const GITHUB_API_URL = 'https://api.github.com/search/repositories';
-        const GITLAB_API_URL = 'https://gitlab.com/api/v4/projects';
-        const BITBUCKET_API_URL = 'https://api.bitbucket.org/2.0/repositories';
-        const HUGGINGFACE_API_URL = 'https://huggingface.co/api/models';
-        const RESULTS_PER_PAGE = 10;
-
-        // --- State ---
-        let currentSort = 'relevant';
-        let currentQuery = '';
-        let isInitialState = true; // Track if it's the first search
-
-        // --- Event Listeners ---
-        searchForm.addEventListener('submit', (event) => {
-             event.preventDefault();
-             const query = searchInput.value.trim();
-             if (query === currentQuery && !isInitialState) return; // Avoid re-searching same query unless filters change
-             currentQuery = query;
-             performSearch();
-        });
-
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const newSort = button.getAttribute('data-sort');
-                if (newSort !== currentSort) {
-                    currentSort = newSort;
-                    updateFilterButtonsUI();
-                    if (currentQuery) {
-                         performSearch();
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>InfraSearch</title>
+                <script src="https://cdn.tailwindcss.com"></script>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+                <style>
+                    :root {
+                        --background-start-rgb: 238, 242, 247;
+                        --background-end-rgb: 224, 231, 239;
+                        --text-color: #334155; /* Slate-700 */
+                        --text-light-color: #64748b; /* Slate-500 */
+                        --link-color: #2563eb; /* Blue-600 */
+                        --link-hover-color: #1d4ed8; /* Blue-700 */
+                        --border-color: rgba(203, 213, 225, 0.4); /* Slate-300 with alpha */
+                        --header-border-color: rgba(203, 213, 225, 0.6);
+                        --card-bg-color: rgba(255, 255, 255, 0.7);
+                        --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                        --card-hover-bg: rgba(255, 255, 255, 0.85);
+                        --input-bg-color: rgba(255, 255, 255, 0.7);
+                        --input-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+                        --button-bg: #3b82f6; /* Blue-500 */
+                        --button-hover-bg: #2563eb; /* Blue-600 */
+                        /* Filter variables removed */
+                        --header-bg-color: rgba(248, 250, 252, 0.8); /* Slightly more opaque */
+                        /* Header title width no longer needed for balancing */
+                        /* --header-title-width: 150px; */
                     }
-                }
-            });
-        });
+
+                    body {
+                        font-family: 'Inter', sans-serif;
+                        background: linear-gradient(135deg, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
+                        color: var(--text-color);
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 100vh;
+                        overflow-x: hidden;
+                        -webkit-font-smoothing: antialiased;
+                        -moz-osx-font-smoothing: grayscale;
+                    }
+
+                    /* Glassmorphism Effect */
+                    .glass {
+                        background: var(--card-bg-color);
+                        backdrop-filter: blur(10px) saturate(180%);
+                        -webkit-backdrop-filter: blur(10px) saturate(180%);
+                        border: 1px solid var(--border-color);
+                        box-shadow: var(--card-shadow);
+                    }
+
+                    /* Animations */
+                    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                    @keyframes subtleSlideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+                    @keyframes titleFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                    /* slideDownFadeIn animation removed */
+
+                    /* Search Container & Form */
+                    #search-container {
+                        width: 100%; padding: 1rem;
+                        transition: padding-top 0.6s ease-out, padding-bottom 0.6s ease-out, align-items 0.6s ease-out, background-color 0.3s ease, border-bottom 0.3s ease, box-shadow 0.3s ease;
+                        display: flex;
+                        flex-direction: column; /* Only wrapper inside now */
+                        justify-content: center; align-items: center;
+                        flex-grow: 1;
+                        flex-shrink: 0;
+                        position: relative;
+                    }
+                    /* Header state */
+                    #search-container.searched-state {
+                        padding: 0.5rem 1rem; /* Minimal padding for header */
+                        align-items: center; /* Center content horizontally */
+                        flex-grow: 0;
+                        background-color: var(--header-bg-color);
+                        backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%);
+                        border-bottom: 1px solid var(--header-border-color);
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+                        position: sticky; top: 0; z-index: 10;
+                    }
+                    #search-form-wrapper {
+                        display: flex;
+                        flex-direction: column; /* Default: stack title/form */
+                        align-items: center;
+                        width: 100%;
+                        max-width: 650px; /* Max width for initial state */
+                        transition: transform 0.6s ease-out, width 0.6s ease-out, max-width 0.6s ease-out;
+                    }
+                    /* Header layout for wrapper */
+                    #search-container.searched-state #search-form-wrapper {
+                        flex-direction: row; /* Title and form side-by-side */
+                        justify-content: center; /* Center title and form */
+                        align-items: center;
+                        max-width: 1100px; /* Wider max-width for header content */
+                        margin: 0 auto; /* Center the wrapper content */
+                        gap: 1.5rem; /* Adjust gap as needed */
+                        width: 100%;
+                    }
+
+                    /* Initial Large Title */
+                    .initial-state-title {
+                        font-size: 2.5rem; font-weight: 700; color: var(--text-color);
+                        margin-bottom: 2rem; text-align: center;
+                        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+                        transform-origin: bottom;
+                    }
+                     @media (min-width: 640px) { .initial-state-title { font-size: 3rem; } }
+                    .initial-state-title.fade-out { animation: titleFadeOut 0.5s ease-out forwards; }
+                    .initial-state-title span { display: inline-block; }
+                    #search-container.searched-state .initial-state-title { display: none; }
 
 
-        // --- Functions ---
+                    /* Results Page Title (Header Title) */
+                    #results-page-title {
+                        font-size: 1.1rem; font-weight: 600; color: var(--text-color);
+                        margin: 0; text-align: left;
+                        opacity: 0; transition: opacity 0.4s 0.3s ease-out; display: none;
+                        flex-shrink: 0;
+                        /* Width removed, no longer needed for balancing */
+                        /* width: var(--header-title-width); */
+                    }
+                    #search-container.searched-state #results-page-title {
+                        opacity: 1; display: block;
+                    }
+                    #results-page-title span { display: inline-block; }
 
-        /**
-         * Main function to perform the search.
-         */
-        async function performSearch() {
-             if (!currentQuery) {
-                 showError("Please enter a search query.");
-                 return;
-             }
 
-             clearResultsAndErrors();
-             showLoading(true); // Show loader immediately
+                    /* Search Form - Reduced Size */
+                    #search-form {
+                        width: 100%; display: flex; align-items: center;
+                        border-radius: 9999px;
+                        padding: 0.35rem 0.5rem 0.35rem 1.25rem;
+                        margin-bottom: 0.75rem; /* Default margin */
+                        position: relative;
+                        transition: box-shadow 0.3s ease, border-color 0.3s ease, margin-bottom 0.3s ease, max-width 0.3s ease;
+                        background: var(--input-bg-color);
+                        backdrop-filter: blur(8px) saturate(150%); -webkit-backdrop-filter: blur(8px) saturate(150%);
+                        border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                    }
+                    /* Header state for form */
+                    #search-container.searched-state #search-form {
+                        margin-bottom: 0; /* Remove margin in header */
+                        max-width: 450px; /* Can be slightly wider now */
+                        /* Remove margin auto, centering handled by parent */
+                        /* margin-left: auto; */
+                        /* margin-right: auto; */
+                    }
 
-             // --- UI Transition ---
-             if (isInitialState) {
-                 // Animate title fade out
-                 initialStateTitle?.classList.add('fade-out');
-                 // Delay search container class change slightly to allow title fade
-                 setTimeout(() => {
-                    searchContainer.classList.remove('initial-state');
-                    searchContainer.classList.add('searched-state');
-                    filterControls.classList.add('visible'); // Make filters visible after move
-                 }, 150); // Adjust timing as needed
-                 isInitialState = false;
-             } else {
-                 // If not initial state, filters are already visible
-                 filterControls.classList.add('visible');
-             }
-             resultsArea.classList.remove('hidden'); // Prepare results area
+                    #search-form:focus-within {
+                         box-shadow: 0 0 0 3px var(--input-focus-shadow), 0 2px 10px rgba(0, 0, 0, 0.06);
+                         border-color: rgba(59, 130, 246, 0.4);
+                    }
+                    #search-input {
+                         flex-grow: 1; border: none; outline: none;
+                         padding: 0.4rem 0; font-size: 0.95rem;
+                         background: transparent; color: var(--text-color);
+                    }
+                    #search-input::placeholder { color: #94a3b8; opacity: 0.8; }
+                    /* Search Button - Reduced Size */
+                    #search-button {
+                         background: var(--button-bg); border: none; color: white; cursor: pointer;
+                         padding: 0.5rem; margin-left: 0.5rem; border-radius: 50%;
+                         width: 34px; height: 34px;
+                         display: flex; align-items: center; justify-content: center;
+                         transition: background-color 0.2s ease, transform 0.2s ease;
+                         box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
+                    }
+                    #search-button:hover { background: var(--button-hover-bg); transform: scale(1.05); }
+                    #search-button i { font-size: 0.9rem; }
 
-             // --- API URLs & Fetching (same as before) ---
-             const encodedQuery = encodeURIComponent(currentQuery);
-             let githubUrl = `${GITHUB_API_URL}?q=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
-             let gitlabUrl = `${GITLAB_API_URL}?search=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
-             let bitbucketUrl = `${BITBUCKET_API_URL}?q=${encodedQuery}&page=1&pagelen=${RESULTS_PER_PAGE}`;
-             let huggingfaceUrl = `${HUGGINGFACE_API_URL}?search=${encodedQuery}&limit=${RESULTS_PER_PAGE}&full=true`;
+                    /* Filter CSS Removed */
+                    /* #filter-toggle-button, #filter-panel, .filter-group, etc. styles removed */
 
-             switch (currentSort) {
-                 case 'updated':
-                     githubUrl += '&sort=updated&order=desc';
-                     gitlabUrl += '&sort=desc&order_by=last_activity_at';
-                     bitbucketUrl += '&sort=-updated_on';
-                     huggingfaceUrl += '&sort=lastModified&direction=-1';
-                     break;
-                 case 'likes':
-                     githubUrl += '&sort=stars&order=desc';
-                     huggingfaceUrl += '&sort=likes&direction=-1';
-                     break;
-                 case 'downloads':
-                     huggingfaceUrl += '&sort=downloads&direction=-1';
-                     break;
-                 case 'relevant':
-                 default: break;
-             }
 
-             let combinedResults = [];
-             let fetchErrors = 0;
+                    /* Results Area */
+                    #results-area {
+                        padding: 1rem 1rem 2rem 1rem;
+                        width: 100%; max-width: 800px;
+                        margin: 0 auto; opacity: 0;
+                        transition: opacity 0.6s 0.3s ease-out;
+                    }
+                    #results-area:not(.hidden) { opacity: 1; }
+                    .results-list { list-style: none; padding: 0; margin: 0; }
 
-             try {
-                 const responses = await Promise.allSettled([
-                     fetch(githubUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } }),
-                     fetch(gitlabUrl),
-                     fetch(bitbucketUrl),
-                     fetch(huggingfaceUrl)
-                 ]);
-
-                 // Process results
-                 if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
-                     const data = await responses[0].value.json();
-                     combinedResults.push(...transformGitHubResults(data.items || []));
-                 } else { fetchErrors++; logFetchError(responses[0], 'GitHub'); }
-
-                 if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
-                     const data = await responses[1].value.json();
-                     combinedResults.push(...transformGitLabResults(data || []));
-                 } else { fetchErrors++; logFetchError(responses[1], 'GitLab'); }
-
-                 if (responses[2].status === 'fulfilled' && responses[2].value.ok) {
-                     const data = await responses[2].value.json();
-                     combinedResults.push(...transformBitbucketResults(data.values || []));
-                 } else { fetchErrors++; logFetchError(responses[2], 'Bitbucket'); }
-
-                 if (responses[3].status === 'fulfilled' && responses[3].value.ok) {
-                     const data = await responses[3].value.json();
-                     combinedResults.push(...transformHuggingFaceResults(data || []));
-                 } else { fetchErrors++; logFetchError(responses[3], 'Hugging Face'); }
-
-                 // Display results - animations handled by CSS
-                 displayCombinedResults(combinedResults);
-
-                 // Handle No Results / All Errors
-                 if (combinedResults.length === 0) {
-                     resultsArea.classList.remove('hidden'); // Ensure area is visible for message
-                     if (fetchErrors === responses.length) {
-                         showError("Failed to fetch results from any platform. Please check your connection or try again later.");
-                     } else {
-                         const sortTextMap = { relevant: 'relevance', updated: 'most updated', likes: 'most likes/stars', downloads: 'most downloads' };
-                         showResultsMessage(`No results found for "${escapeHtml(currentQuery)}" sorted by ${sortTextMap[currentSort]}.`);
+                    /* Result Item - Redesigned */
+                    .result-item {
+                        padding: 1rem 1.25rem; margin-bottom: 1rem;
+                        border-radius: 0.5rem; /* Tailwind rounded-lg */
+                        transition: background-color 0.25s ease-in-out, transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+                        position: relative; opacity: 0; animation: subtleSlideUp 0.5s ease-out forwards;
+                        overflow: hidden;
+                        background: var(--card-bg-color);
+                        backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);
+                        border: 1px solid var(--border-color); box-shadow: var(--card-shadow);
+                    }
+                    .result-item:hover {
+                        background-color: var(--card-hover-bg); transform: translateY(-3px);
+                        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+                    }
+                     .result-item .platform-logo {
+                        position: absolute; top: 0.75rem; right: 0.75rem;
+                        font-size: 1.5rem; color: #9ca3af; opacity: 0.6;
+                        transition: opacity 0.3s ease, transform 0.3s ease;
                      }
-                 } else {
-                     resultsArea.classList.remove('hidden'); // Ensure results area is visible
-                 }
+                     .result-item:hover .platform-logo { opacity: 0.9; transform: scale(1.05); }
+                    .result-item a {
+                        color: var(--link-color); text-decoration: none; font-size: 1.05rem;
+                        font-weight: 600; display: block; margin-bottom: 0.25rem;
+                        padding-right: 2.5rem; transition: color 0.2s ease;
+                    }
+                    .result-item a:hover { color: var(--link-hover-color); text-decoration: underline; }
+                    .result-item .description {
+                        color: var(--text-color); font-size: 0.875rem; margin-bottom: 0.6rem;
+                        line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
+                        padding-right: 2.5rem; opacity: 0.85;
+                    }
+                    /* Metadata - Redesigned */
+                    .result-item .meta {
+                        font-size: 0.75rem; color: #6b7280; display: flex; flex-wrap: wrap;
+                        align-items: center; gap: 0.4rem 1rem;
+                        padding-right: 2.5rem; opacity: 0.75;
+                    }
+                     .result-item .meta span { display: inline-flex; align-items: center; gap: 0.25rem; }
+                     .result-item .meta i { color: #9ca3af; width: 1em; text-align: center; font-size: 0.85em; }
 
-             } catch (error) {
-                 console.error("General Search Error:", error);
-                 showError("An unexpected error occurred during the search.");
-                 resultsArea.classList.add('hidden'); // Hide results area on major error
-             } finally {
-                 showLoading(false); // Hide loader when done
-             }
-        }
+                    /* Error Message */
+                    .error-message {
+                        color: #be123c; background-color: rgba(251, 226, 231, 0.7);
+                        border: 1px solid rgba(251, 191, 204, 0.5);
+                        padding: 1rem 1.25rem; border-radius: 0.5rem; margin-top: 1.5rem;
+                        text-align: center; animation: fadeIn 0.5s ease-out;
+                        backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+                        box-shadow: var(--card-shadow);
+                    }
 
-        /** Logs fetch errors to the console. */
-        function logFetchError(result, platformName) {
-            const status = result.value?.status;
-            const reason = result.reason?.message || `HTTP Error: ${status}`;
-            console.error(`${platformName} Fetch Error: ${reason}`, result.reason || result.value);
-        }
+                    /* No Results Message */
+                    #results-message {
+                         text-align: center; color: #6b7280; padding: 2rem; font-size: 1rem;
+                         border-radius: 0.75rem; margin-top: 1.5rem; animation: fadeIn 0.5s ease-out;
+                         background: var(--card-bg-color); backdrop-filter: blur(10px) saturate(180%);
+                         -webkit-backdrop-filter: blur(10px) saturate(180%);
+                         border: 1px solid var(--border-color); box-shadow: var(--card-shadow);
+                    }
 
-        // --- Data Transformation Functions (Unchanged) ---
-        function transformGitHubResults(items) {
-            return items.map(item => ({ platform: 'github', title: item.full_name, url: item.html_url, description: item.description || '', meta: [ { icon: 'fas fa-star', value: item.stargazers_count.toLocaleString(), label: 'Stars' }, item.language ? { icon: 'fas fa-code', value: item.language, label: 'Language' } : null, { icon: 'fas fa-user', value: item.owner.login, label: 'Owner' } ].filter(Boolean) }));
-        }
-        function transformGitLabResults(projects) {
-            return projects.map(project => ({ platform: 'gitlab', title: project.name_with_namespace, url: project.web_url, description: project.description || '', meta: [ { icon: 'fas fa-star', value: project.star_count.toLocaleString(), label: 'Stars' }, { icon: 'fas fa-code-fork', value: project.forks_count.toLocaleString(), label: 'Forks' }, { icon: 'fas fa-user', value: project.namespace.name, label: 'Namespace' } ] }));
-        }
-        function transformBitbucketResults(repos) {
-            return repos.map(repo => ({ platform: 'bitbucket', title: repo.full_name, url: repo.links?.html?.href || '#', description: repo.description || '', meta: [ repo.language ? { icon: 'fas fa-code', value: repo.language, label: 'Language' } : null, { icon: 'fas fa-user', value: repo.owner?.display_name || repo.workspace?.name || 'Unknown', label: 'Owner' }, repo.updated_on ? { icon: 'fas fa-clock', value: `Updated: ${new Date(repo.updated_on).toLocaleDateString()}`, label: 'Updated' } : null ].filter(Boolean) }));
-        }
-        function transformHuggingFaceResults(models) {
-             if (!Array.isArray(models)) { console.warn("Hugging Face API did not return an array:", models); return []; }
-            return models.map(model => ({ platform: 'huggingface', title: model.modelId, url: `https://huggingface.co/${model.modelId}`, description: model.cardData?.description || model.description || '', meta: [ { icon: 'fas fa-heart', value: model.likes?.toLocaleString() || 0, label: 'Likes' }, (typeof model.downloads !== 'undefined') ? { icon: 'fas fa-download', value: model.downloads.toLocaleString(), label: 'Downloads' } : null, model.pipeline_tag ? { icon: 'fas fa-tags', value: model.pipeline_tag, label: 'Task' } : null, { icon: 'fas fa-user', value: model.author || model.modelId.split('/')[0], label: 'Author' }, model.lastModified ? { icon: 'fas fa-clock', value: `Updated: ${new Date(model.lastModified).toLocaleDateString()}`, label: 'Updated' } : null ].filter(Boolean) }));
-        }
+                    /* Loading Indicator */
+                    .loading-indicator {
+                        display: flex; align-items: center; justify-content: center;
+                        padding: 1.25rem 1.75rem; color: var(--text-color); font-size: 1rem; font-weight: 500;
+                        text-align: center; position: fixed; top: 50%; left: 50%;
+                        transform: translate(-50%, -50%); border-radius: 0.75rem; z-index: 50;
+                        opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s linear;
+                        background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px) saturate(150%);
+                        -webkit-backdrop-filter: blur(8px) saturate(150%);
+                        border: 1px solid rgba(229, 231, 235, 0.5); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                    }
+                    .loading-indicator.visible {
+                        opacity: 1; visibility: visible; transition: opacity 0.3s ease, visibility 0s linear;
+                    }
+                    .spinner {
+                        border: 4px solid rgba(156, 163, 175, 0.2); border-top: 4px solid var(--button-bg);
+                        border-radius: 50%; width: 28px; height: 28px;
+                        animation: spin 0.8s linear infinite; margin-right: 1rem;
+                    }
 
-        /** Displays the combined results in the list. */
-        function displayCombinedResults(results) {
-            // Clear previous results immediately before adding new ones
-            combinedResultsList.innerHTML = '';
+                    /* Utility */
+                    .hidden { display: none !important; }
 
-            if (!results || results.length === 0) {
-                return; // Message handled by caller
-            }
+                </style>
+            </head>
+            <body>
+                <div id="search-container" class="initial-state">
+                    <div id="search-form-wrapper">
+                        <h1 class="initial-state-title">
+                             <span class="text-blue-600">I</span><span class="text-red-500">n</span><span class="text-yellow-500">f</span><span class="text-blue-600">r</span><span class="text-green-500">a</span><span class="text-red-500">S</span>earch
+                         </h1>
+                         <h2 id="results-page-title">
+                             <span class="text-blue-600">I</span><span class="text-red-500">n</span><span class="text-yellow-500">f</span><span class="text-blue-600">r</span><span class="text-green-500">a</span><span class="text-red-500">S</span>earch
+                         </h2>
+                         <form id="search-form" role="search">
+                            <input type="search" id="search-input" name="query" required placeholder="Search across platforms...">
+                            <button type="submit" id="search-button" title="Search" aria-label="Search">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                        </div>
+                     </div>
 
-            // Ensure results area is visible before adding items
-             resultsArea.classList.remove('hidden');
+                <div id="loading" class="loading-indicator" aria-live="polite" aria-busy="true">
+                    <div class="spinner"></div>
+                    <span>Searching...</span>
+                </div>
 
-            results.forEach((result, index) => {
-                const listItem = document.createElement('li');
-                listItem.className = 'result-item';
-                // Apply staggered delay directly via style attribute
-                listItem.style.animationDelay = `${index * 0.05 + 0.1}s`; // Faster stagger
+                <div id="error-message" class="error-message hidden max-w-2xl mx-auto" role="alert"></div>
 
-                let platformIconClass = '';
-                switch (result.platform) {
-                    case 'github': platformIconClass = 'fab fa-github'; break;
-                    case 'gitlab': platformIconClass = 'fab fa-gitlab'; break;
-                    case 'bitbucket': platformIconClass = 'fab fa-bitbucket'; break;
-                    case 'huggingface': platformIconClass = 'fas fa-robot'; break;
-                }
+                <div id="results-area" class="hidden">
+                     <ul id="combined-results-list" class="results-list">
+                         </ul>
+                     <div id="results-message" class="hidden"></div>
+                </div>
 
-                const metaHtml = result.meta.map(m => `
-                    <span title="${m.label || ''}"><i class="${m.icon}"></i> ${escapeHtml(m.value)}</span>
-                `).join('');
+                <script>
+                    // --- DOM Elements ---
+                    const searchContainer = document.getElementById('search-container');
+                    const searchFormWrapper = document.getElementById('search-form-wrapper');
+                    const searchForm = document.getElementById('search-form');
+                    const searchInput = document.getElementById('search-input');
+                    const loadingIndicator = document.getElementById('loading');
+                    const errorMessageDiv = document.getElementById('error-message');
+                    const resultsArea = document.getElementById('results-area');
+                    const initialStateTitle = document.querySelector('.initial-state-title');
+                    const resultsPageTitle = document.getElementById('results-page-title');
+                    const combinedResultsList = document.getElementById('combined-results-list');
+                    const resultsMessage = document.getElementById('results-message');
+                    // Filter Elements Removed
+                    // const filterToggleButton = ...
+                    // const filterPanel = ...
+                    // const filterOptionButtons = ...
 
-                listItem.innerHTML = `
-                    ${platformIconClass ? `<i class="platform-icon ${platformIconClass}" title="${result.platform}"></i>` : ''}
-                    <a href="${result.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(result.title)}</a>
-                    <p class="description">${result.description ? escapeHtml(result.description) : 'No description available.'}</p>
-                    <div class="meta">
-                        ${metaHtml}
-                    </div>
-                `;
-                combinedResultsList.appendChild(listItem);
-            });
-        }
+                    // --- Constants ---
+                    const GITHUB_API_URL = 'https://api.github.com/search/repositories';
+                    const GITLAB_API_URL = 'https://gitlab.com/api/v4/projects';
+                    const BITBUCKET_API_BASE_URL = 'https://api.bitbucket.org/2.0/repositories';
+                    const HUGGINGFACE_API_URL = 'https://huggingface.co/api/models';
+                    const RESULTS_PER_PAGE = 10;
 
-        /** Shows or hides the main loading indicator. */
-        function showLoading(isLoading) {
-            // Use class toggle for visibility/opacity transition
-            loadingIndicator.classList.toggle('visible', isLoading);
-        }
+                    // --- State ---
+                    // Default sort is relevance now, no UI to change it
+                    let currentSort = 'relevant';
+                    // Duration filter removed
+                    // let currentDuration = 'all';
+                    let currentQuery = '';
+                    let isInitialState = true;
+                    // Filter panel state removed
+                    // let isFilterPanelVisible = false;
 
-        /** Displays the general error message. */
-        function showError(message) {
-            errorMessageDiv.textContent = message;
-            errorMessageDiv.classList.remove('hidden');
-            // Hide results area when showing a general error
-            resultsArea.classList.add('hidden');
-        }
+                    // --- Event Listeners ---
+                    searchForm.addEventListener('submit', (event) => {
+                         event.preventDefault();
+                         const query = searchInput.value.trim();
+                         if (query && (query !== currentQuery || isInitialState)) {
+                             currentQuery = query;
+                             performSearch();
+                             // No filter panel to hide
+                         } else if (!query) {
+                             clearResultsAndErrors();
+                             // resetToInitialState(); // Optional
+                         }
+                    });
 
-        /** Displays a message in the results area (e.g., "No results found"). */
-        function showResultsMessage(message) {
-            resultsMessage.textContent = message;
-            resultsMessage.classList.remove('hidden');
-            // Ensure results list is empty when showing this message
-            combinedResultsList.innerHTML = '';
-        }
+                    // Filter Listeners Removed
+                    // filterToggleButton?.addEventListener(...)
+                    // filterOptionButtons.forEach(...)
 
-        /** Clears previous search results and all error/status messages. */
-        function clearResultsAndErrors() {
-            errorMessageDiv.classList.add('hidden');
-            errorMessageDiv.textContent = '';
-            combinedResultsList.innerHTML = ''; // Clear list content
-            resultsMessage.classList.add('hidden'); // Hide no-results message
-            resultsMessage.textContent = '';
-            // Don't hide resultsArea here, performSearch manages its visibility
-            // Don't hide filterControls here either
-        }
+                    // --- Functions ---
 
-        /** Updates the visual state of filter buttons. */
-        function updateFilterButtonsUI() {
-            filterButtons.forEach(button => {
-                button.classList.toggle('active', button.getAttribute('data-sort') === currentSort);
-            });
-        }
+                    // Filter Functions Removed
+                    // hideFilterPanel()
+                    // updateFilterOptionActiveState()
+                    // initializeFilterUI()
+                    // getDateFilter()
+                    // getDurationText()
 
-        /** Escapes HTML characters to prevent XSS. */
-        function escapeHtml(str) {
-            str = String(str || '');
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return str.replace(/[&<>"']/g, m => map[m]);
-        }
 
-        // Initial UI setup
-        updateFilterButtonsUI();
+                    /**
+                     * Main search function: Handles UI state, API calls, sorting, and rendering.
+                     */
+                    async function performSearch() {
+                        if (!currentQuery) {
+                            showError("Please enter a search query.");
+                            return;
+                        }
 
-    </script>
+                        clearResultsAndErrors();
+                        showLoading(true);
+                        loadingIndicator.setAttribute('aria-busy', 'true');
 
-</body>
-</html>
+                        // --- UI Transition ---
+                        if (isInitialState) {
+                            initialStateTitle?.classList.add('fade-out');
+                            setTimeout(() => {
+                                searchContainer.classList.remove('initial-state');
+                                searchContainer.classList.add('searched-state');
+                            }, 150);
+                            isInitialState = false;
+                        } else {
+                             searchContainer.classList.add('searched-state');
+                        }
+                        resultsArea.classList.remove('hidden');
+
+
+                        // --- API URL Construction (Simplified) ---
+                        const encodedQuery = encodeURIComponent(currentQuery);
+                        // Always use default relevance sort from APIs
+                        let githubUrl = `${GITHUB_API_URL}?q=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
+                        let gitlabUrl = `${GITLAB_API_URL}?search=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
+                        let bitbucketBaseQuery = `(name~"${encodedQuery}" OR description~"${encodedQuery}")`;
+                        let bitbucketUrl = `${BITBUCKET_API_BASE_URL}?q=${encodeURIComponent(bitbucketBaseQuery)}&pagelen=${RESULTS_PER_PAGE}`;
+                        let huggingfaceUrl = `${HUGGINGFACE_API_URL}?search=${encodedQuery}&limit=${RESULTS_PER_PAGE}&full=true`;
+
+                        // --- Fetching and Processing ---
+                        let allPlatformResults = { github: [], gitlab: [], bitbucket: [], huggingface: [] };
+                        let fetchErrors = 0;
+
+                        try {
+                            const responses = await Promise.allSettled([
+                                fetch(githubUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } }),
+                                fetch(gitlabUrl),
+                                fetch(bitbucketUrl),
+                                fetch(huggingfaceUrl)
+                            ]);
+
+                            // Process results and store them by platform
+                            if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
+                                const data = await responses[0].value.json();
+                                allPlatformResults.github = transformGitHubResults(data.items || []);
+                            } else { fetchErrors++; logFetchError(responses[0], 'GitHub'); }
+
+                            if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
+                                const data = await responses[1].value.json();
+                                allPlatformResults.gitlab = transformGitLabResults(data || []);
+                            } else { fetchErrors++; logFetchError(responses[1], 'GitLab'); }
+
+                            if (responses[2].status === 'fulfilled' && responses[2].value.ok) {
+                                const data = await responses[2].value.json();
+                                allPlatformResults.bitbucket = transformBitbucketResults(data.values || []);
+                            } else { fetchErrors++; logFetchError(responses[2], 'Bitbucket'); }
+
+                            if (responses[3].status === 'fulfilled' && responses[3].value.ok) {
+                                const data = await responses[3].value.json();
+                                allPlatformResults.huggingface = transformHuggingFaceResults(data || []);
+                            } else { fetchErrors++; logFetchError(responses[3], 'Hugging Face'); }
+
+                            // --- Combine, Interleave (default), and Display ---
+                            let finalResults = [];
+                            const combined = [
+                                ...allPlatformResults.github,
+                                ...allPlatformResults.gitlab,
+                                ...allPlatformResults.bitbucket,
+                                ...allPlatformResults.huggingface
+                            ];
+
+                            // No client-side date filtering needed
+
+                            if (combined.length > 0) {
+                                // Always interleave results now as there's no other sort option
+                                finalResults = interleaveResults(allPlatformResults);
+                                displayCombinedResults(finalResults);
+                                resultsArea.classList.remove('hidden');
+                            } else {
+                                resultsArea.classList.remove('hidden');
+                                if (fetchErrors === responses.length && combined.length === 0) {
+                                    showError("Failed to fetch results from any platform. Check connection or API status.");
+                                } else {
+                                    // Simplified message
+                                    showResultsMessage(`No results found for "${escapeHtml(currentQuery)}".`);
+                                }
+                            }
+
+                        } catch (error) {
+                            console.error("General Search Error:", error);
+                            showError("An unexpected error occurred during the search.");
+                            resultsArea.classList.add('hidden');
+                        } finally {
+                            showLoading(false);
+                            loadingIndicator.setAttribute('aria-busy', 'false');
+                        }
+                    }
+
+                    /** Logs fetch errors. */
+                    function logFetchError(result, platformName) {
+                        let reason = 'Unknown error';
+                        let status = 'N/A';
+                        if (result.status === 'rejected') {
+                            reason = result.reason?.message || 'Fetch rejected';
+                        } else if (result.status === 'fulfilled') {
+                             status = result.value.status;
+                             if (!result.value.ok) {
+                                reason = `HTTP Error: ${status} ${result.value.statusText}`;
+                             } else {
+                                 reason = 'Unexpected state in logFetchError';
+                             }
+                        }
+                        console.error(`${platformName} Fetch Error (Status: ${status}): ${reason}`, result);
+                    }
+
+                    // --- Data Transformation Functions (Simplified - sort keys not strictly needed now) ---
+                    // Kept sort keys in case sorting is added back later
+                     function transformGitHubResults(items) {
+                        return items.map(item => ({
+                            platform: 'github',
+                            title: item.full_name,
+                            url: item.html_url,
+                            description: item.description || '',
+                            sort_likes: item.stargazers_count ?? 0,
+                            sort_updated: item.updated_at ? new Date(item.updated_at) : new Date(0),
+                            sort_downloads: 0,
+                            meta: [
+                                { icon: 'fas fa-star', value: item.stargazers_count?.toLocaleString() ?? '0', label: 'Stars' },
+                                item.language ? { icon: 'fas fa-code', value: item.language, label: 'Language' } : null,
+                                { icon: 'fas fa-user', value: item.owner?.login ?? '?', label: 'Owner' },
+                                item.updated_at ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(item.updated_at)}`, label: 'Updated' } : null
+                            ].filter(Boolean)
+                        }));
+                    }
+                    function transformGitLabResults(projects) {
+                         if (!Array.isArray(projects)) { console.warn("GitLab API non-array:", projects); return []; }
+                        return projects.map(project => ({
+                            platform: 'gitlab',
+                            title: project.name_with_namespace,
+                            url: project.web_url,
+                            description: project.description || '',
+                            sort_likes: project.star_count ?? 0,
+                            sort_updated: project.last_activity_at ? new Date(project.last_activity_at) : new Date(0),
+                            sort_downloads: 0,
+                            meta: [
+                                { icon: 'fas fa-star', value: project.star_count?.toLocaleString() ?? '0', label: 'Stars' },
+                                { icon: 'fas fa-code-fork', value: project.forks_count?.toLocaleString() ?? '0', label: 'Forks' },
+                                { icon: 'fas fa-user', value: project.namespace?.name ?? '?', label: 'Namespace' },
+                                 project.last_activity_at ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(project.last_activity_at)}`, label: 'Updated' } : null
+                            ].filter(Boolean)
+                        }));
+                    }
+                    function transformBitbucketResults(repos) {
+                         if (!Array.isArray(repos)) { console.warn("Bitbucket API non-array:", repos); return []; }
+                        return repos.map(repo => ({
+                            platform: 'bitbucket',
+                            title: repo.full_name,
+                            url: repo.links?.html?.href || '#',
+                            description: repo.description || '',
+                            sort_likes: 0,
+                            sort_updated: repo.updated_on ? new Date(repo.updated_on) : new Date(0),
+                            sort_downloads: 0,
+                            meta: [
+                                repo.language ? { icon: 'fas fa-code', value: repo.language, label: 'Language' } : null,
+                                { icon: 'fas fa-user', value: repo.owner?.display_name || repo.workspace?.name || '?', label: 'Owner/Workspace' },
+                                repo.updated_on ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(repo.updated_on)}`, label: 'Updated' } : null
+                            ].filter(Boolean)
+                        }));
+                    }
+                    function transformHuggingFaceResults(models) {
+                         if (!Array.isArray(models)) { console.warn("Hugging Face API non-array:", models); return []; }
+                        return models.map(model => ({
+                            platform: 'huggingface',
+                            title: model.modelId,
+                            url: `https://huggingface.co/${model.modelId}`,
+                            description: model.cardData?.description || model.description || '',
+                            sort_likes: model.likes ?? 0,
+                            sort_updated: model.lastModified ? new Date(model.lastModified) : new Date(0),
+                            sort_downloads: model.downloads ?? 0,
+                            meta: [
+                                { icon: 'fas fa-heart', value: model.likes?.toLocaleString() ?? '0', label: 'Likes' },
+                                (typeof model.downloads !== 'undefined') ? { icon: 'fas fa-download', value: model.downloads.toLocaleString(), label: 'Downloads' } : null,
+                                model.pipeline_tag ? { icon: 'fas fa-tags', value: model.pipeline_tag, label: 'Task' } : null,
+                                { icon: 'fas fa-user', value: model.author || model.modelId.split('/')[0], label: 'Author' },
+                                model.lastModified ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(model.lastModified)}`, label: 'Updated' } : null
+                            ].filter(Boolean)
+                        }));
+                    }
+
+
+                    /** Interleaves results from different platforms. */
+                    function interleaveResults(platformResults) {
+                        const interleaved = [];
+                        const sources = Object.values(platformResults).map(arr => [...arr]);
+                        let maxLen = 0;
+                        sources.forEach(arr => { maxLen = Math.max(maxLen, arr.length); });
+
+                        for (let i = 0; i < maxLen; i++) {
+                            sources.forEach(arr => {
+                                if (i < arr.length) {
+                                    interleaved.push(arr[i]);
+                                }
+                            });
+                        }
+                        return interleaved;
+                    }
+
+                    // sortCombinedResults function removed as it's no longer needed
+
+                    /** Renders the final results list to the DOM. */
+                    function displayCombinedResults(results) {
+                        combinedResultsList.innerHTML = '';
+                        if (!results || results.length === 0) return;
+
+                        resultsArea.classList.remove('hidden');
+
+                        results.forEach((result, index) => {
+                            const listItem = document.createElement('li');
+                            listItem.className = 'result-item';
+                            listItem.style.animationDelay = `${index * 0.07 + 0.1}s`;
+
+                            let platformLogoClass = '';
+                            switch (result.platform) {
+                                case 'github': platformLogoClass = 'fab fa-github'; break;
+                                case 'gitlab': platformLogoClass = 'fab fa-gitlab'; break;
+                                case 'bitbucket': platformLogoClass = 'fab fa-bitbucket'; break;
+                                case 'huggingface': platformLogoClass = 'fas fa-robot'; break;
+                            }
+
+                            const metaHtml = result.meta.map(m => `
+                                <span title="${escapeHtml(m.label || '')}">
+                                    <i class="${m.icon}" aria-hidden="true"></i> ${escapeHtml(m.value)}
+                                </span>
+                            `).join('');
+
+                            listItem.innerHTML = `
+                                ${platformLogoClass ? `<i class="platform-logo ${platformLogoClass}" title="${result.platform}" aria-label="${result.platform} result"></i>` : ''}
+                                <a href="${escapeHtml(result.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(result.title)}</a>
+                                <p class="description">${result.description ? escapeHtml(result.description) : 'No description available.'}</p>
+                                <div class="meta">
+                                    ${metaHtml}
+                                </div>
+                            `;
+                            combinedResultsList.appendChild(listItem);
+                        });
+                    }
+
+                    /** Shows/hides loading indicator. */
+                    function showLoading(isLoading) {
+                        loadingIndicator.classList.toggle('visible', isLoading);
+                    }
+
+                    /** Displays error message. */
+                    function showError(message) {
+                        errorMessageDiv.textContent = message;
+                        errorMessageDiv.classList.remove('hidden');
+                        combinedResultsList.innerHTML = '';
+                        resultsMessage.classList.add('hidden');
+                        resultsArea.classList.remove('hidden');
+                    }
+
+                    /** Displays 'no results' message. */
+                    function showResultsMessage(message) {
+                        resultsMessage.textContent = message;
+                        resultsMessage.classList.remove('hidden');
+                        combinedResultsList.innerHTML = '';
+                        resultsArea.classList.remove('hidden');
+                    }
+
+                    /** Clears results and error/status messages. */
+                    function clearResultsAndErrors() {
+                        errorMessageDiv.classList.add('hidden');
+                        errorMessageDiv.textContent = '';
+                        combinedResultsList.innerHTML = '';
+                        resultsMessage.classList.add('hidden');
+                        resultsMessage.textContent = '';
+                    }
+
+                    // updateFilterButtonsUI function removed
+
+                    /** Escapes HTML characters. */
+                    function escapeHtml(str) {
+                        str = String(str || '');
+                        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                        return str.replace(/[&<>"']/g, m => map[m]);
+                    }
+
+                    /** Formats date string. */
+                    function formatDate(dateString) {
+                        if (!dateString) return '';
+                        try {
+                            return new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                        } catch (e) { return dateString; }
+                    }
+
+                    // --- Initial Setup ---
+                    // initializeFilterUI call removed
+                    showLoading(false);
+                    loadingIndicator.setAttribute('aria-busy', 'false');
+
+                </script>
+
+            </body>
+            </html>
+            
