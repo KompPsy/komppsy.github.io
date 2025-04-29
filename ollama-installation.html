@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Installation Wiki (Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Base Styles (Dark Mode) --- */
+        html {
+            scroll-behavior: smooth;
+            color-scheme: dark;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* gray-900 */
+            color: #d1d5db; /* gray-300 */
+            line-height: 1.65; /* Improve readability */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Custom Scrollbar (Dark Mode) --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* gray-500 */
+        }
+
+        /* --- Wiki Content Styling --- */
+        .wiki-content {
+            max-width: 800px; /* Limit content width */
+            margin: 2rem auto; /* Center content */
+            padding: 2rem;
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 0.75rem; /* rounded-lg */
+            border: 1px solid #374151; /* gray-700 */
+        }
+
+        .wiki-content h1 {
+            font-size: 2.25rem; /* text-3xl */
+            font-weight: 700; /* bold */
+            color: #f9fafb; /* gray-50 */
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #4b5563; /* gray-600 */
+            padding-bottom: 0.75rem;
+        }
+
+        .wiki-content h2 {
+            font-size: 1.875rem; /* text-2xl */
+            font-weight: 600; /* semibold */
+            color: #f3f4f6; /* gray-100 */
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #374151; /* gray-700 */
+            padding-bottom: 0.5rem;
+        }
+
+        .wiki-content h3 {
+            font-size: 1.5rem; /* text-xl */
+            font-weight: 600; /* semibold */
+            color: #e5e7eb; /* gray-200 */
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+         .wiki-content h4 {
+            font-size: 1.25rem; /* text-lg */
+            font-weight: 600; /* semibold */
+            color: #d1d5db; /* gray-300 */
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .wiki-content p {
+            margin-bottom: 1rem;
+            color: #d1d5db; /* gray-300 */
+        }
+
+        .wiki-content ul,
+        .wiki-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            list-style-position: outside;
+        }
+
+        .wiki-content ul {
+            list-style-type: disc;
+        }
+        .wiki-content ol {
+            list-style-type: decimal;
+        }
+
+        .wiki-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .wiki-content li>ul,
+        .wiki-content li>ol {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            margin-left: 1rem;
+        }
+
+        .wiki-content a {
+            color: #60a5fa; /* blue-400 */
+            text-decoration: underline;
+            transition: color 0.2s ease;
+        }
+
+        .wiki-content a:hover {
+            color: #93c5fd; /* blue-300 */
+        }
+
+        .wiki-content code:not(pre code) { /* Inline code */
+            background-color: #374151; /* gray-700 */
+            color: #e5e7eb; /* gray-200 */
+            padding: 0.15rem 0.4rem;
+            border-radius: 0.25rem; /* rounded-sm */
+            font-size: 0.875em; /* Slightly smaller */
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .wiki-content pre {
+            background-color: #111827; /* gray-900 */
+            color: #d1d5db; /* gray-300 */
+            padding: 1rem;
+            border-radius: 0.5rem; /* rounded-md */
+            overflow-x: auto; /* Allow horizontal scroll */
+            margin-bottom: 1.5rem;
+            border: 1px solid #374151; /* gray-700 */
+        }
+
+        .wiki-content pre code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.5;
+            background-color: transparent !important; /* Override inline style */
+            padding: 0 !important;
+            color: inherit !important;
+        }
+
+        .wiki-content strong {
+            font-weight: 600; /* semibold */
+            color: #e5e7eb; /* gray-200 */
+        }
+
+        .wiki-content em {
+            font-style: italic;
+            color: #e5e7eb; /* gray-200 */
+        }
+
+        /* Simple Header */
+        .wiki-header {
+            background-color: #1f2937; /* gray-800 */
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #374151; /* gray-700 */
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .wiki-header h1 {
+            font-size: 1.5rem; /* text-xl */
+            font-weight: 600; /* semibold */
+            color: #f9fafb; /* gray-50 */
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <header class="wiki-header">
+        <h1>Ollama Installation Wiki</h1>
+    </header>
+
+    <div class="wiki-content">
+        <h1>Ollama Installation and Web UI Setup Scripts</h1>
+        <h2>Description</h2>
+        <p>This package contains a set of scripts to automate the installation and management of Ollama and the Open WebUI on a Linux system.</p>
+
+        <h2>Prerequisites</h2>
+        <p>Before running the installation scripts, ensure your system meets the following requirements:</p>
+        <ol>
+            <li><strong>Operating System:</strong> A Linux distribution. The scripts have specific support for:
+                <ul>
+                    <li>Debian-based systems (Debian, Ubuntu, etc.)</li>
+                    <li>RHEL-based systems (CentOS, Fedora, Rocky Linux, Amazon Linux, etc.)</li>
+                    <li>WSL2 (Windows Subsystem for Linux 2) is supported, but GPU passthrough requires specific configuration. WSL1 is <em>not</em> supported.</li>
+                </ul>
+            </li>
+            <li><strong>Architecture:</strong> amd64 (x86_64) or arm64 (aarch64).</li>
+            <li><strong>Internet Connection:</strong> Required to download Ollama, Docker images, GPU drivers, and dependencies.</li>
+            <li><strong>Permissions:</strong> You will need <code>sudo</code> privileges or root access to run the installation scripts, as they install software, manage services, and modify user groups.</li>
+            <li><strong>Required Tools:</strong> The scripts depend on common command-line tools. The <code>install-ollama.sh</code> script specifically checks for:
+                <ul>
+                    <li><code>curl</code></li>
+                    <li><code>awk</code></li>
+                    <li><code>grep</code></li>
+                    <li><code>sed</code></li>
+                    <li><code>tee</code></li>
+                    <li><code>xargs</code></li>
+                </ul>
+                The <code>install-docker.sh</code> script may install prerequisites like <code>ca-certificates</code>, <code>curl</code>, <code>gnupg</code>, and <code>yum-utils</code>/<code>dnf-plugins-core</code> depending on your distribution.
+            </li>
+            <li><strong>(Optional) GPU:</strong>
+                <ul>
+                    <li><strong>NVIDIA:</strong> Compatible NVIDIA GPU with appropriate drivers. The <code>install-ollama.sh</code> script attempts to detect and install CUDA drivers if needed (requires <code>lspci</code> or <code>lshw</code> to be installed for detection).</li>
+                    <li><strong>AMD:</strong> Compatible AMD GPU. The <code>install-ollama.sh</code> script attempts to detect and install ROCm components if needed (requires <code>lspci</code> or <code>lshw</code> to be installed for detection).</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h2>Overview</h2>
+        <p>These scripts streamline the process of:</p>
+        <ul>
+            <li>Installs docker if needed</li>
+            <li>Installing Ollama, including necessary GPU drivers (NVIDIA/AMD) and systemd service configuration. Ollama Install script is from <a href="https://ollama.com/install.sh" target="_blank" rel="noopener noreferrer">https://ollama.com/install.sh</a>. I modified service config in the script</li>
+            <li>Running the Open WebUI using Docker.</li>
+            <li>Stopping the Ollama service.</li>
+            <li>Removing the Open WebUI Docker container and image.</li>
+            <li>Automating the entire setup process with a single script.</li>
+        </ul>
+
+        <h2>Scripts Detail</h2>
+        <p>Here's a brief overview of what each individual script does:</p>
+        <ol>
+            <li><strong><code>install-docker.sh</code></strong>
+                <ul>
+                    <li>Checks if the <code>docker</code> command exists. If so, it exits assuming Docker is installed.</li>
+                    <li>Detects the Linux distribution (Debian/Ubuntu/RHEL-based).</li>
+                    <li>Installs prerequisite packages (<code>ca-certificates</code>, <code>curl</code>, <code>gnupg</code>, <code>yum-utils</code>/<code>dnf-plugins-core</code>).</li>
+                    <li>Adds Docker's official GPG key and package repository.</li>
+                    <li>Installs Docker Engine (<code>docker-ce</code>, <code>docker-ce-cli</code>, <code>containerd.io</code>, etc.).</li>
+                    <li>Starts and enables the Docker service (on RHEL-based systems; Debian/Ubuntu usually handle this automatically).</li>
+                    <li>Verifies the installation by running <code>docker --version</code>.</li>
+                </ul>
+            </li>
+            <li><strong><code>install-ollama.sh</code></strong>
+                <ul>
+                    <li>Detects system architecture (amd64/arm64) and Linux distribution.</li>
+                    <li>Downloads the appropriate Ollama binary and installs it.</li>
+                    <li>Installs specific components for NVIDIA JetPack systems if detected.</li>
+                    <li>Checks for existing NVIDIA/AMD GPUs using <code>lspci</code>/<code>lshw</code> (if available).</li>
+                    <li>Attempts to install NVIDIA CUDA drivers or AMD ROCm components if a compatible GPU is found and drivers seem missing.</li>
+                    <li>Creates an <code>ollama</code> system user and group if they don't exist.</li>
+                    <li>Adds the current user to the <code>ollama</code> group.</li>
+                    <li>Creates and configures a systemd service (<code>/etc/systemd/system/ollama.service</code>) with specific environment variables (e.g., <code>OLLAMA_HOST=0.0.0.0</code>, GPU settings, cache size).</li>
+                    <li>Enables and starts the <code>ollama.service</code> using <code>systemctl</code>.</li>
+                    <li><h4>NOTE: install-ollama.sh is from <a href="https://ollama.com/install.sh" target="_blank" rel="noopener noreferrer">https://ollama.com/install.sh</a> which I modified the service service files EOF section to improve performance for my ollama workloads.</h4></li>
+                </ul>
+            </li>
+            <li><strong><code>install-webui-docker.sh</code></strong>
+                <ul>
+                    <li>Defines variables for port mapping, container name, volume name, image name, and network settings.</li>
+                    <li>Executes <code>docker run</code> with appropriate options for detached mode, port mapping, host network access, volume mounting, container naming, and automatic restart.</li>
+                    <li>Specifies the <code>ghcr.io/open-webui/open-webui:main</code> image.</li>
+                    <li>Prints potential URLs to access the Web UI.</li>
+                </ul>
+            </li>
+            <li><strong><code>remove-webui-docker.sh</code></strong>
+                <ul>
+                    <li>Finds the container ID of the running container based on the Open WebUI image.</li>
+                    <li>If found, stops (<code>docker stop</code>) and removes (<code>docker rm</code>) the container.</li>
+                    <li>Finds the image ID of the Open WebUI image.</li>
+                    <li>If found and no other containers use the image, removes the image (<code>docker rmi</code>).</li>
+                </ul>
+            </li>
+            <li><strong><code>stop-ollama.sh</code></strong>
+                <ul>
+                    <li>Checks if the <code>ollama.service</code> is active using <code>systemctl is-active --quiet</code>.</li>
+                    <li>If active, stops the service using <code>sudo systemctl stop ollama.service</code>.</li>
+                    <li>Reports whether the service was stopped or was already inactive.</li>
+                </ul>
+            </li>
+            <li><strong><code>automate-ollama-install.sh</code></strong>
+                <ul>
+                    <li>A simple script that executes the other scripts sequentially using <code>curl | sudo bash</code>:
+                        <ol>
+                            <li><code>install-docker.sh</code></li>
+                            <li><code>stop-ollama.sh</code></li>
+                            <li><code>install-ollama.sh</code></li>
+                            <li><code>remove-webui-docker.sh</code></li>
+                            <li><code>install-webui-docker.sh</code></li>
+                        </ol>
+                    </li>
+                </ul>
+            </li>
+            <li><strong><code>uninstall-ollama-open-webui.sh</code></strong>
+                <ul>
+                    <li>A simple script that executes to uninstall ollama and OpenWebUI</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h2>Usage</h2>
+        <p>To run the complete automated installation and setup process:</p>
+        <h3>Installs / Updates OLLAMA and OpenWeb UI</h3>
+        <p>This is only to install / update OLLAMA and OpenWeb UI</p>
+        <pre><code>curl -sSL https://raw.githubusercontent.com/KompPsy/ollama-installation/refs/heads/main/automate-ollama-install.sh | sudo bash</code></pre>
+        <h3>Installs / Updates OLLAMA</h3>
+        <p>This is only to install / update OLLAMA</p>
+        <pre><code>curl -sSL https://raw.githubusercontent.com/KompPsy/ollama-installation/refs/heads/main/install-ollama.sh | sudo bash</code></pre>
+
+        <h2>Accessing the Open WebUI</h2>
+        <p>Once the <code>install-webui-docker.sh</code> script (or the <code>automate-ollama-install.sh</code> script) has completed successfully, the Open WebUI will be running in a Docker container.</p>
+        <p>The script attempts to detect your server's IP address(es) and will print the URLs where you can access the interface. Typically, these will be:</p>
+        <ul>
+            <li><code>http://localhost:3000</code> (if accessing from the same machine)</li>
+            <li><code>http://127.0.0.1:3000</code> (if accessing from the same machine)</li>
+            <li><code>http://&lt;YOUR_SERVER_IP&gt;:3000</code> (if accessing from another machine on the same network)</li>
+        </ul>
+        <p>Replace <code>&lt;YOUR_SERVER_IP&gt;</code> with the actual local IP address of the machine running Ollama and the Web UI.</p>
+        <p>Open your web browser and navigate to one of these URLs. You should see the Open WebUI interface, ready to interact with your locally running Ollama models.</p>
+
+        <h2>Using Ollama CLI</h2>
+        <p>After running the <code>install-ollama.sh</code> script, the <code>ollama</code> command-line tool is installed. You can use it directly from your terminal.</p>
+        <p>Common commands:</p>
+        <ul>
+            <li><strong>List local models:</strong> <code>ollama list</code></li>
+            <li><strong>Pull a model:</strong> <code>ollama pull &lt;model_name&gt;</code> (e.g., <code>ollama pull llama3</code>)</li>
+            <li><strong>Run a model:</strong> <code>ollama run &lt;model_name&gt;</code> (e.g., <code>ollama run llama3</code>)</li>
+            <li><strong>See help:</strong> <code>ollama --help</code></li>
+        </ul>
+        <p><em>Note: If you just ran the installation script, you might need to log out and log back in, or run <code>newgrp ollama</code>, to use <code>ollama</code> commands without <code>sudo</code>.</em></p>
+
+        <h2>Uninstallation</h2>
+        <h3>Uninstall Usage of Ollama and Open WebUI:</h3>
+        <p>This script uninstalls OLLAMA and Open WebUI</p>
+        <pre><code>curl -sSL https://raw.githubusercontent.com/KompPsy/ollama-installation/refs/heads/main/uninstall-ollama-open-webui.sh | sudo bash</code></pre>
+
+    </div>
+
+</body>
+
+</html>
