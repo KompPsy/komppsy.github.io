@@ -4,21 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peter Aldrich Jr - Principal DevOps Engineer</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Peter Aldrich Jr - Principal DevOps Engineer (Dark Mode)</title> <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- Base Styles --- */
+        /* --- Base Styles (Dark Mode) --- */
         html {
             scroll-behavior: smooth;
+            color-scheme: dark;
+            /* Indicate dark mode preference */
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #ffffff; /* Pure White */
-            color: #1f2937; /* gray-800 */
+            background-color: #111827;
+            /* gray-900 */
+            color: #d1d5db;
+            /* gray-300 */
             overflow-x: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
             -webkit-font-smoothing: antialiased;
@@ -29,249 +32,412 @@
             overflow: hidden;
         }
 
-        /* --- Custom Scrollbar (Subtle) --- */
+        /* --- Custom Scrollbar (Dark Mode) --- */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
+
         ::-webkit-scrollbar-track {
-            background: #f3f4f6; /* gray-100 */
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #d1d5db; /* gray-300 */
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af; /* gray-400 */
+            background: #1f2937;
+            /* gray-800 */
         }
 
-        /* --- Header Styling --- */
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            /* gray-600 */
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+            /* gray-500 */
+        }
+
+        /* --- Header Styling (Dark Mode) --- */
         #main-header {
-            background-color: rgba(255, 255, 255, 0.85); /* Slightly less transparent */
-            backdrop-filter: blur(12px); /* Slightly more blur */
+            background-color: rgba(17, 24, 39, 0.85);
+            /* gray-900 with opacity */
+            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid #e5e7eb; /* gray-200 */
+            border-bottom: 1px solid #374151;
+            /* gray-700 */
             transition: background-color 0.3s ease, backdrop-filter 0.3s ease, border-color 0.3s ease;
         }
 
-        /* --- Scroll Animation Classes (Sleeker Easing & Duration) --- */
+        /* Header Text */
+        #main-header .text-gray-800 {
+            color: #f9fafb;
+        }
+
+        /* gray-50 */
+        #main-header .text-gray-500 {
+            color: #9ca3af;
+        }
+
+        /* gray-400 */
+        #main-header .hover\:text-blue-600:hover {
+            color: #60a5fa;
+        }
+
+        /* blue-400 */
+
+        /* --- Scroll Animation Classes --- */
         .animate-on-scroll {
             opacity: 0;
-            /* Smoother easing (easeOutExpo) and slightly longer duration */
             transition: opacity 0.9s cubic-bezier(0.165, 0.84, 0.44, 1), transform 0.9s cubic-bezier(0.165, 0.84, 0.44, 1);
             will-change: opacity, transform;
         }
-        .fade-in-up { transform: translateY(25px); } /* Slightly more travel */
-        .fade-in-down { transform: translateY(-25px); }
-        .fade-in-left { transform: translateX(-25px); }
-        .fade-in-right { transform: translateX(25px); }
-        .zoom-in { transform: scale(0.92); } /* Slightly more zoom */
+
+        .fade-in-up {
+            transform: translateY(25px);
+        }
+
+        .fade-in-down {
+            transform: translateY(-25px);
+        }
+
+        .fade-in-left {
+            transform: translateX(-25px);
+        }
+
+        .fade-in-right {
+            transform: translateX(25px);
+        }
+
+        .zoom-in {
+            transform: scale(0.92);
+        }
 
         .animate-on-scroll.is-visible {
             opacity: 1;
             transform: translate(0, 0) scale(1);
         }
-        /* Slightly adjusted stagger delays */
-        .stagger-1 { transition-delay: 0.15s !important; }
-        .stagger-2 { transition-delay: 0.25s !important; }
-        .stagger-3 { transition-delay: 0.35s !important; }
-        .stagger-4 { transition-delay: 0.45s !important; }
-        .stagger-5 { transition-delay: 0.55s !important; }
-        .stagger-6 { transition-delay: 0.65s !important; }
-        .stagger-7 { transition-delay: 0.75s !important; }
 
-        /* --- Hover Effects (Vibrant Accents) --- */
+        .stagger-1 {
+            transition-delay: 0.15s !important;
+        }
+
+        .stagger-2 {
+            transition-delay: 0.25s !important;
+        }
+
+        .stagger-3 {
+            transition-delay: 0.35s !important;
+        }
+
+        .stagger-4 {
+            transition-delay: 0.45s !important;
+        }
+
+        .stagger-5 {
+            transition-delay: 0.55s !important;
+        }
+
+        .stagger-6 {
+            transition-delay: 0.65s !important;
+        }
+
+        .stagger-7 {
+            transition-delay: 0.75s !important;
+        }
+
+        /* --- Hover Effects (Blue Accents - Dark Mode) --- */
         nav .desktop-nav a {
-            transition: color 0.25s ease; /* Slightly longer transition */
-            color: #4b5563; /* gray-600 */
+            transition: color 0.25s ease;
+            color: #9ca3af;
+            /* gray-400 */
             position: relative;
             padding-bottom: 4px;
         }
+
         nav .desktop-nav a::after {
             content: '';
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 1.5px; /* Slightly thicker underline */
-            background-color: #0d9488; /* Vibrant Teal accent (Tailwind teal-600) */
+            height: 1.5px;
+            background-color: #60a5fa;
+            /* Lighter Blue (blue-400) */
             transform: scaleX(0);
             transform-origin: left;
-            transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* easeOutQuad */
+            transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
+
         nav .desktop-nav a:hover::after {
             transform: scaleX(1);
         }
+
         nav .desktop-nav a:hover {
-            color: #0d9488; /* Teal on hover */
+            color: #bfdbfe;
+            /* Lightest Blue (blue-200) */
         }
 
+        /* Mobile Nav Dark Mode */
         nav .mobile-nav a {
             transition: background-color 0.2s ease, color 0.2s ease;
-            color: #4b5563;
-        }
-        nav .mobile-nav a:hover {
-            background-color: #ecfdf5; /* Light Teal (teal-50) */
-            color: #0f766e; /* Darker Teal (teal-700) */
+            color: #9ca3af;
+            /* gray-400 */
+            border-bottom-color: #374151;
+            /* gray-700 */
         }
 
-        /* Vibrant Button */
+        nav .mobile-nav a:hover {
+            background-color: #1f2937;
+            /* gray-800 */
+            color: #e5e7eb;
+            /* gray-200 */
+        }
+
+        #mobile-menu {
+            background-color: rgba(31, 41, 55, 0.97);
+            /* gray-800 with opacity */
+            border-top-color: #374151;
+            /* gray-700 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            /* Standard shadow */
+        }
+
+        #mobile-menu a.text-gray-600 {
+            color: #9ca3af;
+        }
+
+        /* gray-400 */
+        #mobile-menu a.hover\:text-blue-800:hover {
+            color: #60a5fa;
+        }
+
+        /* blue-400 */
+
+
+        /* Vibrant Blue Button (Dark Mode) */
         .button-primary {
             transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
-            box-shadow: 0 2px 4px -1px rgba(13, 148, 136, 0.2), 0 4px 5px 0 rgba(13, 148, 136, 0.14), 0 1px 10px 0 rgba(13, 148, 136, 0.12); /* Teal shadow */
-            background-color: #14b8a6; /* Vibrant Teal (teal-500) */
-            color: white;
-            font-weight: 600; /* Semibold */
-        }
-        .button-primary:hover {
-            transform: translateY(-3px) scale(1.03); /* More noticeable hover */
-            box-shadow: 0 5px 5px -3px rgba(13, 148, 136, 0.2), 0 8px 10px 1px rgba(13, 148, 136, 0.14), 0 3px 14px 2px rgba(13, 148, 136, 0.12); /* Enhanced teal shadow */
-            background-color: #0d9488; /* Darker Teal (teal-600) */
+            /* Lighter blue shadow */
+            box-shadow: 0 2px 4px -1px rgba(96, 165, 250, 0.2), 0 4px 5px 0 rgba(96, 165, 250, 0.14), 0 1px 10px 0 rgba(96, 165, 250, 0.12);
+            background-color: #60a5fa;
+            /* Lighter Blue (blue-400) */
+            color: #111827;
+            /* Dark text (gray-900) */
+            font-weight: 600;
         }
 
-        /* Blog Card Link Styling (Subtle Vibrant Border on Hover) */
+        .button-primary:hover {
+            transform: translateY(-3px) scale(1.03);
+            /* Enhanced lighter blue shadow */
+            box-shadow: 0 5px 5px -3px rgba(96, 165, 250, 0.2), 0 8px 10px 1px rgba(96, 165, 250, 0.14), 0 3px 14px 2px rgba(96, 165, 250, 0.12);
+            background-color: #93c5fd;
+            /* Even Lighter Blue (blue-300) */
+        }
+
+        /* Blog Card Link Styling (Dark Mode) */
         .blog-card-link {
             display: block;
             text-decoration: none;
             color: inherit;
+            /* Inherits body text color */
             height: 100%;
-            border-radius: 1rem; /* rounded-xl */
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; /* Add border transition */
+            border-radius: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
             overflow: hidden;
-            border: 1px solid #e5e7eb; /* gray-200 */
-            background-color: #ffffff; /* Ensure white background */
+            border: 1px solid #374151;
+            /* Darker border (gray-700) */
+            background-color: #1f2937;
+            /* gray-800 */
         }
+
         .blog-card {
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            /* background is now on the link */
             transition: background-color 0.3s ease;
         }
+
         .blog-card-link:hover {
-            transform: translateY(-5px); /* Slightly more lift */
-            box-shadow: 0 10px 20px -5px rgb(0 0 0 / 0.08); /* Softer, larger shadow */
-            border-color: #5eead4; /* Light Teal border (teal-300) */
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px -5px rgb(0 0 0 / 0.2);
+            /* Darker shadow */
+            border-color: #4b5563;
+            /* gray-600 */
+            background-color: #374151;
+            /* gray-700 */
         }
-        /* Link uses primary blue */
+
+        /* Link uses lighter primary blue */
         .blog-card-link .view-link {
-             color: #3b82f6; /* Primary Blue */
-             transition: color 0.2s ease;
+            color: #60a5fa;
+            /* Lighter Blue (blue-400) */
+            transition: color 0.2s ease;
         }
+
         .blog-card-link:hover .view-link {
-            color: #2563eb; /* Darker Blue */
+            color: #93c5fd;
+            /* Lightest Blue (blue-300) */
             text-decoration: underline;
         }
 
+        /* Card Text */
+        .blog-card .text-gray-800 {
+            color: #f3f4f6;
+        }
 
-        /* Contact Link Styling (Vibrant Teal Hover) */
+        /* gray-100 */
+        .blog-card .text-gray-600 {
+            color: #9ca3af;
+        }
+
+        /* gray-400 */
+
+
+        /* Contact Link Styling (Dark Mode) */
         .contact-link svg {
             transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55), fill 0.25s ease;
-            fill: #6b7280; /* gray-500 */
+            fill: #9ca3af;
+            /* gray-400 */
         }
+
         .contact-link:hover svg {
-            transform: scale(1.2); /* Slightly larger scale */
-            fill: #14b8a6; /* Vibrant Teal */
+            transform: scale(1.2);
+            fill: #93c5fd;
+            /* Lightest Blue (blue-300) */
         }
+
         .contact-link span {
-             color: #4b5563;
-             transition: color 0.25s ease;
+            color: #d1d5db;
+            /* gray-300 */
+            transition: color 0.25s ease;
         }
+
         .contact-link:hover span {
-            color: #0f766e; /* Darker Teal */
+            color: #f9fafb;
+            /* gray-50 */
         }
 
 
-        /* --- Section Title Underline (Vibrant Blue) --- */
+        /* --- Section Title Underline (Lighter Blue) --- */
         .section-title {
             position: relative;
             display: inline-block;
-            padding-bottom: 12px; /* More space */
-            margin-bottom: 1.5rem; /* More space */
+            padding-bottom: 12px;
+            margin-bottom: 1.5rem;
+            color: #f3f4f6;
+            /* gray-100 */
         }
+
         .section-title::after {
             content: '';
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%) scaleX(0);
-            width: 70px; /* Longer */
-            height: 2.5px; /* Thicker */
-            background-color: #3b82f6; /* Vibrant Blue */
+            width: 70px;
+            height: 2.5px;
+            background-color: #60a5fa;
+            /* Lighter Blue (blue-400) */
             border-radius: 1px;
             transform-origin: center;
-            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1); /* Slower, smoother */
+            transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
+
         .section-title.is-visible::after {
             transform: translateX(-50%) scaleX(1);
         }
 
-        /* --- Mobile Menu Transition --- */
-        #mobile-menu {
-            transition: transform 0.35s ease-out, opacity 0.35s ease-out; /* Slightly longer */
-            transform: translateY(-15px); /* More travel */
-            opacity: 0;
-            pointer-events: none;
-            background-color: rgba(255, 255, 255, 0.97); /* More opaque */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        #mobile-menu.active {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* --- Skills Marquee Animation (Blue & Teal Tags) --- */
+        /* --- Skills Marquee Animation (Blue & Sky Blue Tags - Dark Mode) --- */
         .skills-marquee-container {
             width: 100%;
             overflow: hidden;
             position: relative;
             padding-top: 1rem;
             padding-bottom: 1rem;
-            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
-            mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+            /* Dark mode mask */
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, white 15%, white 85%, transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0%, white 15%, white 85%, transparent 100%);
         }
+
         .skills-marquee-inner {
             display: flex;
             width: fit-content;
             white-space: nowrap;
-            animation: marquee-scroll 55s linear infinite; /* Slightly faster */
+            animation: marquee-scroll 55s linear infinite;
             will-change: transform;
         }
+
         .skills-marquee-container:hover .skills-marquee-inner {
             animation-play-state: paused;
         }
+
         .skills-marquee-inner .skill-tag {
             margin-right: 1rem;
             flex-shrink: 0;
-            transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease; /* Add shadow transition */
+            transition: transform 0.25s ease, background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
             border: 1px solid transparent;
             padding: 0.375rem 0.875rem;
             font-size: 0.75rem;
             font-weight: 500;
             border-radius: 9999px;
         }
+
         .skills-marquee-inner .skill-tag:hover {
-            transform: scale(1.08) translateY(-1px); /* More pop */
-            box-shadow: 0 3px 8px -1px rgba(0,0,0,0.1); /* Subtle shadow on hover */
-            filter: brightness(1.05); /* Slightly brighten */
-        }
-        @keyframes marquee-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .skills-marquee-inner { animation: none; white-space: normal; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
-            .skills-marquee-container { -webkit-mask-image: none; mask-image: none; }
-            .skills-marquee-inner > div[aria-hidden="true"] { display: none; }
+            transform: scale(1.08) translateY(-1px);
+            box-shadow: 0 3px 8px -1px rgba(0, 0, 0, 0.2);
+            /* Darker shadow */
+            filter: brightness(1.1);
+            /* Brighten slightly */
         }
 
-        /* --- Horizontal Timeline Styles --- */
+        @keyframes marquee-scroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .skills-marquee-inner {
+                animation: none;
+                white-space: normal;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.75rem;
+            }
+
+            .skills-marquee-container {
+                -webkit-mask-image: none;
+                mask-image: none;
+            }
+
+            .skills-marquee-inner>div[aria-hidden="true"] {
+                display: none;
+            }
+        }
+
+        /* Skill tag colors (Dark Mode) */
+        .skill-tag.bg-blue-skill {
+            background-color: #1e3a8a;
+            color: #dbeafe;
+        }
+
+        /* blue-800 / blue-100 */
+        .skill-tag.bg-sky-skill {
+            background-color: #0c4a6e;
+            color: #e0f2fe;
+        }
+
+        /* sky-800 / sky-100 */
+
+
+        /* --- Horizontal Timeline Styles (Dark Mode) --- */
         .timeline-outer-container {
             position: relative;
         }
+
         .timeline-container-horizontal {
             width: 100%;
             overflow-x: auto;
@@ -281,7 +447,10 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        .timeline-container-horizontal::-webkit-scrollbar { display: none; }
+
+        .timeline-container-horizontal::-webkit-scrollbar {
+            display: none;
+        }
 
         .timeline-wrapper {
             display: inline-flex;
@@ -290,6 +459,7 @@
             position: relative;
             min-width: 100%;
         }
+
         .timeline-wrapper::before {
             content: '';
             position: absolute;
@@ -297,7 +467,8 @@
             left: 0;
             height: 2px;
             width: 100%;
-            background-color: #d1d5db; /* gray-300 */
+            background-color: #4b5563;
+            /* gray-600 */
             z-index: 5;
         }
 
@@ -309,55 +480,93 @@
             padding-bottom: 2.5rem;
             text-align: left;
         }
-        .timeline-item-horizontal:last-child { margin-right: 1.5rem; }
 
-        /* Vibrant blue timeline dot */
+        .timeline-item-horizontal:last-child {
+            margin-right: 1.5rem;
+        }
+
+        /* Lighter blue timeline dot */
         .timeline-item-horizontal::before {
             content: '';
             position: absolute;
             left: 50%;
-            bottom: calc(1.5rem - 7px); /* Adjust for larger size */
+            bottom: calc(1.5rem - 7px);
             transform: translateX(-50%);
-            height: 14px; /* Larger dot */
+            height: 14px;
             width: 14px;
-            background-color: #ffffff;
-            border: 3px solid #3b82f6; /* Vibrant Blue border */
+            background-color: #374151;
+            /* gray-700 */
+            border: 3px solid #60a5fa;
+            /* Lighter Blue border (blue-400) */
             border-radius: 50%;
             z-index: 10;
             transition: background-color 0.25s ease, transform 0.25s ease;
         }
-        /* Fill dot with light blue on hover */
+
         .timeline-item-horizontal:hover::before {
-            background-color: #bfdbfe; /* blue-200 */
-            transform: translateX(-50%) scale(1.15); /* More scale */
+            background-color: #93c5fd;
+            /* blue-300 */
+            transform: translateX(-50%) scale(1.15);
         }
 
-        /* Timeline summary card */
+        /* Timeline summary card (Dark Mode) */
         .timeline-summary {
-            padding: 1rem 1.25rem; /* More padding */
-            background-color: #ffffff; /* White background */
-            border-radius: 0.75rem; /* rounded-lg */
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+            padding: 1rem 1.25rem;
+            background-color: #1f2937;
+            /* gray-800 */
+            border-radius: 0.75rem;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
             position: relative;
-            border: 1px solid #e5e7eb; /* gray-200 */
+            border: 1px solid #4b5563;
+            /* Default Darker border (gray-600) */
             width: 100%;
         }
-        .timeline-summary[data-target-details] { cursor: pointer; }
-        .timeline-summary[data-target-details]:hover {
-            border-color: #93c5fd; /* blue-300 */
-            box-shadow: 0 6px 12px -3px rgb(0 0 0 / 0.07);
-        }
-        /* Vibrant blue "View Details" link */
-         .timeline-summary .view-details-link {
-            color: #3b82f6; /* Vibrant Blue */
-            transition: color 0.2s ease;
-         }
-         .timeline-summary .view-details-link:hover {
-             color: #1d4ed8; /* Darker Blue */
-             text-decoration: underline;
-         }
 
-        /* --- Timeline Modal Styles --- */
+        .timeline-summary[data-target-details] {
+            cursor: pointer;
+        }
+
+        .timeline-summary[data-target-details]:hover {
+            border-color: #9ca3af;
+            /* Brighter border (gray-400) */
+            background-color: #374151;
+            /* gray-700 */
+            box-shadow: 0 6px 12px -3px rgb(0 0 0 / 0.15);
+            /* Darker shadow */
+        }
+
+        /* Lighter blue "View Details" link */
+        .timeline-summary .view-details-link {
+            color: #60a5fa;
+            /* Lighter Blue (blue-400) */
+            transition: color 0.2s ease;
+        }
+
+        .timeline-summary .view-details-link:hover {
+            color: #bfdbfe;
+            /* Lightest Blue (blue-200) */
+            text-decoration: underline;
+        }
+
+        /* Timeline summary text */
+        .timeline-summary .text-gray-800 {
+            color: #f3f4f6;
+        }
+
+        /* gray-100 */
+        .timeline-summary .text-gray-500 {
+            color: #9ca3af;
+        }
+
+        /* gray-400 */
+        .timeline-summary .text-gray-400 {
+            color: #6b7280;
+        }
+
+        /* gray-500 */
+
+
+        /* --- Timeline Modal Styles (Dark Mode) --- */
         #timeline-modal {
             position: fixed;
             inset: 0;
@@ -365,13 +574,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(243, 244, 246, 0.7); /* gray-100/70 */
+            background-color: rgba(17, 24, 39, 0.8);
+            /* gray-900/80 */
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.35s ease-out;
         }
+
         #timeline-modal.active {
             opacity: 1;
             pointer-events: auto;
@@ -379,106 +590,199 @@
 
         #modal-content-container {
             position: relative;
-            background-color: white;
-            padding: 2.5rem; /* More padding */
-            border-radius: 1rem; /* rounded-xl */
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            background-color: #1f2937;
+            /* gray-800 */
+            padding: 2.5rem;
+            border-radius: 1rem;
+            border: 1px solid #4b5563;
+            /* gray-600 */
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.2), 0 8px 10px -6px rgb(0 0 0 / 0.2);
+            /* Darker shadow */
             margin: auto;
-            max-width: 42rem; /* max-w-lg slightly increased */
+            max-width: 42rem;
             width: 90%;
             max-height: 85vh;
             overflow-y: auto;
             opacity: 0;
-            transform: scale(0.95) translateY(15px); /* Start slightly lower */
-            transition: opacity 0.35s ease-out, transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Smoother transform */
+            transform: scale(0.95) translateY(15px);
+            transition: opacity 0.35s ease-out, transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             will-change: transform, opacity;
         }
+
         #timeline-modal.active #modal-content-container {
             opacity: 1;
             transform: scale(1) translateY(0);
         }
 
         #modal-details-content ul {
-            margin-top: 1.25rem; /* More space */
+            margin-top: 1.25rem;
             padding-left: 1.25rem;
             list-style-type: disc;
         }
+
         #modal-details-content li {
-            margin-bottom: 0.75rem; /* More space */
-            line-height: 1.7; /* More leading */
-            color: #374151; /* gray-700 */
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+            color: #d1d5db;
+            /* gray-300 */
         }
-        /* Style modal title with blue */
+
+        /* Modal Title uses lighter blue */
         #modal-title {
-            color: #1e40af; /* Dark Blue (blue-800) */
+            color: #93c5fd;
+            /* Light Blue (blue-300) */
+        }
+
+        /* Modal Subtitle */
+        #modal-subtitle {
+            color: #9ca3af;
+            /* gray-400 */
         }
 
         #modal-close-button {
             position: absolute;
             top: 1rem;
             right: 1rem;
-            padding: 0.625rem; /* Larger tap target */
-            background-color: #f3f4f6; /* gray-100 */
+            padding: 0.625rem;
+            background-color: #374151;
+            /* gray-700 */
             border-radius: 50%;
             line-height: 1;
-            color: #6b7280; /* gray-500 */
+            color: #9ca3af;
+            /* gray-400 */
             transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
         }
+
         #modal-close-button:hover {
-            background-color: #e5e7eb; /* gray-200 */
-            color: #1f2937; /* gray-800 */
-            transform: rotate(90deg); /* Add rotation on hover */
+            background-color: #4b5563;
+            /* gray-600 */
+            color: #f9fafb;
+            /* gray-50 */
+            transform: rotate(90deg);
         }
 
-        /* --- Timeline Scroll Arrows (Vibrant Teal) --- */
+        /* --- Timeline Scroll Arrows (Lighter Blue) --- */
         .timeline-scroll-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
             z-index: 20;
-            background-color: rgba(255, 255, 255, 0.95); /* More opaque */
-            border: 1px solid #ccfbf1; /* Light Teal border (teal-100) */
+            background-color: rgba(31, 41, 55, 0.9);
+            /* gray-800/90 */
+            border: 1px solid #4b5563;
+            /* gray-600 */
             border-radius: 50%;
-            padding: 0.75rem; /* Larger */
+            padding: 0.75rem;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            /* Darker shadow */
             transition: opacity 0.3s ease, transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
             opacity: 0;
             pointer-events: none;
         }
+
         .timeline-scroll-arrow.visible {
             opacity: 1;
             pointer-events: auto;
         }
+
         .timeline-scroll-arrow:hover {
-            background-color: #f0fdfa; /* Very Light Teal (teal-50) */
-            transform: translateY(-50%) scale(1.1); /* More scale */
-            box-shadow: 0 5px 10px rgba(13, 148, 136, 0.15); /* Teal shadow */
+            background-color: #4b5563;
+            /* gray-600 */
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            /* Darker shadow */
         }
-        /* Vibrant teal arrow icons */
+
         .timeline-scroll-arrow svg {
-            width: 1.5rem; /* Larger icon */
+            width: 1.5rem;
             height: 1.5rem;
-            stroke: #14b8a6; /* Vibrant Teal */
+            stroke: #93c5fd;
+            /* Light Blue (blue-300) */
             stroke-width: 2;
         }
-        #scroll-left-button { left: 1rem; }
-        #scroll-right-button { right: 1rem; }
 
-        /* Footer Styling */
+        #scroll-left-button {
+            left: 1rem;
+        }
+
+        #scroll-right-button {
+            right: 1rem;
+        }
+
+        /* Footer Styling (Dark Mode) */
         footer {
-            border-top: 1px solid #e5e7eb; /* gray-200 */
+            border-top: 1px solid #374151;
+            /* gray-700 */
+            background-color: #1f2937;
+            /* gray-800 */
+            color: #9ca3af;
+            /* gray-400 */
         }
 
-        /* Subtle background gradient for Hero section */
+        /* Section Backgrounds (Dark Mode) */
         #home {
-             background-image: linear-gradient(to bottom right, #ffffff, #eff6ff); /* White to very light blue (blue-50) */
-        }
-        /* Subtle background for alternating sections */
-        #blog, #contact {
-            background-color: #f8fafc; /* gray-50 slightly different */
+            /* Dark blue gradient */
+            background-image: linear-gradient(to bottom right, #111827, #1e293b);
+            /* gray-900 to slate-800 */
         }
 
+        #blog {
+            /* Slightly lighter dark gray */
+            background-color: #1f2937;
+            /* gray-800 */
+        }
+
+        #resume {
+            /* Darkest gray */
+            background-color: #111827;
+            /* gray-900 */
+        }
+
+        #contact {
+            /* Slightly lighter dark gray */
+            background-color: #1f2937;
+            /* gray-800 */
+        }
+
+        /* Adjust text colors within sections */
+        #home .text-gray-900,
+        #resume .text-gray-800,
+        #resume .text-gray-700 {
+            color: #f9fafb;
+        }
+
+        /* gray-50 */
+        #home .text-gray-600,
+        #resume .text-gray-600 {
+            color: #d1d5db;
+        }
+
+        /* gray-300 */
+        #home .text-blue-600 {
+            color: #93c5fd;
+        }
+
+        /* blue-300 */
+
+        #blog .text-gray-800,
+        #contact .text-gray-800 {
+            color: #f3f4f6;
+        }
+
+        /* gray-100 */
+        #blog .text-gray-600,
+        #contact .text-gray-600 {
+            color: #9ca3af;
+        }
+
+        /* gray-400 */
+        #blog .text-gray-500,
+        #contact .text-gray-500 {
+            color: #6b7280;
+        }
+
+        /* gray-500 */
     </style>
 </head>
 
@@ -486,31 +790,35 @@
 
     <header id="main-header" class="sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-lg font-semibold text-gray-800 tracking-wide">Peter Aldrich Jr</div>
+            <div class="text-lg font-semibold text-gray-100 tracking-wide">Peter Aldrich Jr</div>
 
             <div class="hidden md:flex items-center space-x-8 desktop-nav">
                 <a href="#home" class="font-medium">Home</a>
                 <a href="#blog" class="font-medium">Blog</a>
                 <a href="#resume" class="font-medium">Resume</a>
                 <a href="#contact" class="font-medium">Contact</a>
-                <a href="https://github.com/KompPsy" target="_blank" rel="noopener noreferrer" title="GitHub Profile" class="text-gray-500 hover:text-teal-600 transition-colors duration-200 ml-2"> <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github">
+                <a href="https://github.com/KompPsy" target="_blank" rel="noopener noreferrer" title="GitHub Profile" class="text-gray-400 hover:text-blue-300 transition-colors duration-200 ml-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github">
                         <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                     </svg>
                  </a>
             </div>
 
             <div class="md:hidden flex items-center">
-                <button id="mobile-menu-button" class="text-gray-600 hover:text-teal-600 focus:outline-none p-1 rounded-md focus:ring-2 focus:ring-teal-300"> <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <button id="mobile-menu-button" class="text-gray-400 hover:text-blue-300 focus:outline-none p-1 rounded-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                     </svg>
                 </button>
             </div>
         </nav>
-        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full shadow-xl border-t border-gray-200 mobile-nav"> <a href="#home" class="block px-6 py-3 font-medium border-b border-gray-100">Home</a>
-            <a href="#blog" class="block px-6 py-3 font-medium border-b border-gray-100">Blog</a>
-            <a href="#resume" class="block px-6 py-3 font-medium border-b border-gray-100">Resume</a>
-            <a href="#contact" class="block px-6 py-3 font-medium border-b border-gray-100">Contact</a>
-            <a href="https://github.com/KompPsy" target="_blank" rel="noopener noreferrer" class="flex items-center px-6 py-3 font-medium text-gray-600 hover:text-teal-700"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github mr-2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full shadow-xl border-t border-gray-700 mobile-nav">
+            <a href="#home" class="block px-6 py-3 font-medium border-b border-gray-700">Home</a>
+            <a href="#blog" class="block px-6 py-3 font-medium border-b border-gray-700">Blog</a>
+            <a href="#resume" class="block px-6 py-3 font-medium border-b border-gray-700">Resume</a>
+            <a href="#contact" class="block px-6 py-3 font-medium border-b border-gray-700">Contact</a>
+            <a href="https://github.com/KompPsy" target="_blank" rel="noopener noreferrer" class="flex items-center px-6 py-3 font-medium text-gray-400 hover:text-blue-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-github mr-2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
                 GitHub
             </a>
         </div>
@@ -521,27 +829,35 @@
         <section id="home" class="min-h-screen flex items-center justify-center px-6 py-24 md:py-32 overflow-hidden">
             <div class="text-center max-w-3xl">
                 <img src="https://raw.githubusercontent.com/KompPsy/komppsy.github.io/refs/heads/main/1718591380371.jpg" alt="Peter Aldrich Jr profile picture"
-                     class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover mx-auto mb-10 border-4 border-white shadow-lg animate-on-scroll zoom-in" onerror="this.onerror=null; this.src='https://placehold.co/192x192/EBF4FF/4B5563?text=PA';">
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 animate-on-scroll fade-in-down stagger-1 tracking-tight">Peter Aldrich Jr</h1> <p class="text-lg md:text-xl text-blue-600 font-semibold mb-8 animate-on-scroll fade-in-up stagger-2 tracking-wide">DevOps Engineer</p> <p class="text-base md:text-lg text-gray-600 leading-relaxed max-w-xl mx-auto mb-12 animate-on-scroll fade-in-up stagger-3">Passionate about AI, infrastructure, and leveraging cutting-edge technologies. Committed to continuous learning and driving innovation for impactful results.</p>
+                     class="w-40 h-40 md:w-48 md:h-48 rounded-full object-cover mx-auto mb-10 border-4 border-gray-700 shadow-lg animate-on-scroll zoom-in" onerror="this.onerror=null; this.src='https://placehold.co/192x192/374151/d1d5db?text=PA';">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-50 mb-4 animate-on-scroll fade-in-down stagger-1 tracking-tight">Peter Aldrich Jr</h1>
+                <p class="text-lg md:text-xl text-blue-300 font-semibold mb-8 animate-on-scroll fade-in-up stagger-2 tracking-wide">Principal DevOps Engineer</p>
+                <p class="text-base md:text-lg text-gray-300 leading-relaxed max-w-xl mx-auto mb-12 animate-on-scroll fade-in-up stagger-3">Passionate about AI, infrastructure, and leveraging cutting-edge technologies. Committed to continuous learning and driving innovation for impactful results.</p>
                 <div class="animate-on-scroll zoom-in stagger-4">
-                    <a href="#resume" class="button-primary py-3 px-10 rounded-full text-base shadow-lg inline-block">View Resume</a> </div>
+                    <a href="#resume" class="button-primary py-3 px-10 rounded-full text-base shadow-lg inline-block">View Resume</a>
+                </div>
             </div>
         </section>
 
         <section id="blog" class="py-24 md:py-32 px-6">
             <div class="container mx-auto text-center">
-                <h2 class="section-title text-3xl md:text-4xl font-semibold text-gray-800 mb-16 animate-on-scroll fade-in-down">Blog</h2>
-                <p class="text-lg text-gray-600 mb-20 max-w-2xl mx-auto animate-on-scroll fade-in-up stagger-1">Insights, thoughts, and updates on DevOps, AI, and technology.</p> <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12"> <a href="https://github.com/KompPsy/jupyter-service/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="blog-card-link animate-on-scroll fade-in-up stagger-2">
-                        <div class="blog-card p-7"> <div>
-                                <h3 class="text-lg font-semibold mb-3 text-gray-800">Jupyter Service Config</h3> <p class="text-sm text-gray-600 leading-relaxed mb-5">Details on configuring and managing a Jupyter Notebook service using systemd.</p> </div>
+                <h2 class="section-title text-3xl md:text-4xl font-semibold mb-16 animate-on-scroll fade-in-down">Blog</h2>
+                <p class="text-lg text-gray-400 mb-20 max-w-2xl mx-auto animate-on-scroll fade-in-up stagger-1">Insights, thoughts, and updates on DevOps, AI, and technology.</p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
+                    <a href="https://github.com/KompPsy/jupyter-service/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="blog-card-link animate-on-scroll fade-in-up stagger-2">
+                        <div class="blog-card p-7">
+                            <div>
+                                <h3 class="text-lg font-semibold mb-3 text-gray-100">Jupyter Service Config</h3>
+                                <p class="text-sm text-gray-400 leading-relaxed mb-5">Details on configuring and managing a Jupyter Notebook service using systemd.</p>
+                            </div>
                             <span class="view-link font-medium text-sm self-start mt-auto">View on GitHub &rarr;</span>
                         </div>
                     </a>
                     <a href="https://github.com/KompPsy/traefikSSL/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="blog-card-link animate-on-scroll fade-in-up stagger-3">
                         <div class="blog-card p-7">
                             <div>
-                                <h3 class="text-lg font-semibold mb-3 text-gray-800">Reverse Proxy with SSL</h3>
-                                <p class="text-sm text-gray-600 leading-relaxed mb-5">Leveraging Docker to deploy a Reverse Proxy (Traefik) with automated SSL.</p>
+                                <h3 class="text-lg font-semibold mb-3 text-gray-100">Reverse Proxy with SSL</h3>
+                                <p class="text-sm text-gray-400 leading-relaxed mb-5">Leveraging Docker to deploy a Reverse Proxy (Traefik) with automated SSL.</p>
                             </div>
                             <span class="view-link font-medium text-sm self-start mt-auto">View on Github &rarr;</span>
                         </div>
@@ -549,39 +865,41 @@
                     <a href="https://github.com/KompPsy/ollama-installation/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="blog-card-link animate-on-scroll fade-in-up stagger-4">
                         <div class="blog-card p-7">
                             <div>
-                                <h3 class="text-lg font-semibold mb-3 text-gray-800">Getting Started with Ollama</h3>
-                                <p class="text-sm text-gray-600 leading-relaxed mb-5">A look into running large language models locally using Ollama.</p>
+                                <h3 class="text-lg font-semibold mb-3 text-gray-100">Getting Started with Ollama</h3>
+                                <p class="text-sm text-gray-400 leading-relaxed mb-5">A look into running large language models locally using Ollama.</p>
                             </div>
                             <span class="view-link font-medium text-sm self-start mt-auto">View on GitHub &rarr;</span>
                         </div>
                     </a>
                 </div>
-                <p class="mt-20 text-gray-500 text-sm animate-on-scroll fade-in-up stagger-5">More posts coming soon!</p> </div>
+                <p class="mt-20 text-gray-500 text-sm animate-on-scroll fade-in-up stagger-5">More posts coming soon!</p>
+            </div>
         </section>
 
-        <section id="resume" class="py-24 md:py-32 px-6 bg-white overflow-hidden">
+        <section id="resume" class="py-24 md:py-32 px-6 overflow-hidden">
             <div class="container mx-auto">
-                <h2 class="section-title text-3xl md:text-4xl font-semibold text-center text-gray-800 mb-20 animate-on-scroll fade-in-down">Resume</h2>
+                <h2 class="section-title text-3xl md:text-4xl font-semibold text-center mb-20 animate-on-scroll fade-in-down">Resume</h2>
 
                 <div class="mb-20">
-                    <h3 class="text-2xl font-medium text-gray-700 mb-12 text-center animate-on-scroll fade-in-left">Education</h3> <div class="timeline-outer-container">
+                    <h3 class="text-2xl font-medium text-gray-200 mb-12 text-center animate-on-scroll fade-in-left">Education</h3>
+                    <div class="timeline-outer-container">
                         <div id="timeline-scroll-container-edu" class="timeline-container-horizontal">
                             <div class="timeline-wrapper justify-center">
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up">
                                     <div class="timeline-content">
                                         <div class="timeline-summary">
-                                            <h4 class="text-base font-semibold text-gray-800">B.S. Criminal Justice</h4>
-                                            <p class="text-xs text-gray-500 font-medium mt-1">Westfield State University</p>
-                                            <p class="text-xs text-gray-400 font-medium">2014 - 2020</p>
+                                            <h4 class="text-base font-semibold text-gray-100">B.S. Criminal Justice</h4>
+                                            <p class="text-xs text-gray-400 font-medium mt-1">Westfield State University</p>
+                                            <p class="text-xs text-gray-500 font-medium">2014 - 2020</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-1">
                                     <div class="timeline-content">
                                         <div class="timeline-summary">
-                                            <h4 class="text-base font-semibold text-gray-800">B.S. Computer Science</h4>
-                                             <p class="text-xs text-gray-500 font-medium mt-1">Westfield State University</p>
-                                            <p class="text-xs text-gray-400 font-medium">2016 - 2020</p>
+                                            <h4 class="text-base font-semibold text-gray-100">B.S. Computer Science</h4>
+                                             <p class="text-xs text-gray-400 font-medium mt-1">Westfield State University</p>
+                                            <p class="text-xs text-gray-500 font-medium">2016 - 2020</p>
                                         </div>
                                     </div>
                                 </div>
@@ -593,22 +911,23 @@
                 </div>
 
                 <div class="mb-20">
-                    <h3 class="text-2xl font-medium text-gray-700 mb-12 text-center animate-on-scroll fade-in-left">Certifications & Clearance</h3> <div class="timeline-outer-container">
+                    <h3 class="text-2xl font-medium text-gray-200 mb-12 text-center animate-on-scroll fade-in-left">Certifications & Clearance</h3>
+                    <div class="timeline-outer-container">
                         <div id="timeline-scroll-container-certs" class="timeline-container-horizontal">
                             <div class="timeline-wrapper justify-center">
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up">
                                     <div class="timeline-content">
                                         <div class="timeline-summary">
-                                            <h4 class="text-base font-semibold text-gray-800">CompTIA Security+</h4>
-                                            <p class="text-xs text-gray-500 font-medium mt-1">Valid: 2024 - 2027</p>
+                                            <h4 class="text-base font-semibold text-gray-100">CompTIA Security+</h4>
+                                            <p class="text-xs text-gray-400 font-medium mt-1">Valid: 2024 - 2027</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-1">
                                     <div class="timeline-content">
                                         <div class="timeline-summary">
-                                            <h4 class="text-base font-semibold text-gray-800">Security Clearance: Secret</h4>
-                                            <p class="text-xs text-gray-500 font-medium mt-1">Valid: 2020 - 2030</p>
+                                            <h4 class="text-base font-semibold text-gray-100">Security Clearance: Secret</h4>
+                                            <p class="text-xs text-gray-400 font-medium mt-1">Valid: 2020 - 2030</p>
                                         </div>
                                     </div>
                                 </div>
@@ -620,15 +939,16 @@
                 </div>
 
                 <div class="mb-20">
-                    <h3 class="text-2xl font-medium text-gray-700 mb-12 text-center animate-on-scroll fade-in-left">Experience</h3> <div class="timeline-outer-container">
+                    <h3 class="text-2xl font-medium text-gray-200 mb-12 text-center animate-on-scroll fade-in-left">Experience</h3>
+                    <div class="timeline-outer-container">
                         <div id="timeline-scroll-container" class="timeline-container-horizontal">
                             <div class="timeline-wrapper">
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up">
                                     <div class="timeline-content">
                                         <div class="timeline-summary" data-target-details="details-job-1">
-                                            <h4 class="text-base font-semibold text-gray-800">Principal DevOps Engineer</h4>
-                                            <p class="text-xs text-gray-500 font-medium mt-1 mb-1">Raytheon</p>
-                                            <p class="text-xs text-gray-400 font-medium mb-2">Apr 2024 - Present</p>
+                                            <h4 class="text-base font-semibold text-gray-100">Principal DevOps Engineer</h4>
+                                            <p class="text-xs text-gray-400 font-medium mt-1 mb-1">Raytheon</p>
+                                            <p class="text-xs text-gray-500 font-medium mb-2">Apr 2024 - Present</p>
                                             <span class="view-details-link text-xs font-medium">View Details</span>
                                         </div>
                                         <div id="details-job-1" class="hidden">
@@ -645,9 +965,9 @@
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-1">
                                     <div class="timeline-content">
                                         <div class="timeline-summary" data-target-details="details-job-2">
-                                            <h4 class="text-base font-semibold text-gray-800">Senior Linux Systems Admin</h4>
-                                            <p class="text-xs text-gray-500 font-medium mt-1 mb-1">Raytheon</p>
-                                            <p class="text-xs text-gray-400 font-medium mb-2">Sep 2022 - Apr 2024</p>
+                                            <h4 class="text-base font-semibold text-gray-100">Senior Linux Systems Admin</h4>
+                                            <p class="text-xs text-gray-400 font-medium mt-1 mb-1">Raytheon</p>
+                                            <p class="text-xs text-gray-500 font-medium mb-2">Sep 2022 - Apr 2024</p>
                                             <span class="view-details-link text-xs font-medium">View Details</span>
                                         </div>
                                         <div id="details-job-2" class="hidden">
@@ -662,9 +982,9 @@
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-2">
                                     <div class="timeline-content">
                                         <div class="timeline-summary" data-target-details="details-job-3">
-                                            <h4 class="text-base font-semibold text-gray-800">Systems Engineer II</h4>
-                                            <p class="text-xs text-gray-500 font-medium mt-1 mb-1">GD Mission Systems</p>
-                                            <p class="text-xs text-gray-400 font-medium mb-2">May 2022 - Sep 2022</p>
+                                            <h4 class="text-base font-semibold text-gray-100">Systems Engineer II</h4>
+                                            <p class="text-xs text-gray-400 font-medium mt-1 mb-1">GD Mission Systems</p>
+                                            <p class="text-xs text-gray-500 font-medium mb-2">May 2022 - Sep 2022</p>
                                             <span class="view-details-link text-xs font-medium">View Details</span>
                                         </div>
                                         <div id="details-job-3" class="hidden">
@@ -681,9 +1001,9 @@
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-3">
                                     <div class="timeline-content">
                                         <div class="timeline-summary" data-target-details="details-job-4">
-                                            <h4 class="text-base font-semibold text-gray-800">Systems Engineer I</h4>
-                                             <p class="text-xs text-gray-500 font-medium mt-1 mb-1">GD Mission Systems</p>
-                                            <p class="text-xs text-gray-400 font-medium mb-2">Jun 2020 - May 2022</p>
+                                            <h4 class="text-base font-semibold text-gray-100">Systems Engineer I</h4>
+                                             <p class="text-xs text-gray-400 font-medium mt-1 mb-1">GD Mission Systems</p>
+                                            <p class="text-xs text-gray-500 font-medium mb-2">Jun 2020 - May 2022</p>
                                             <span class="view-details-link text-xs font-medium">View Details</span>
                                         </div>
                                         <div id="details-job-4" class="hidden">
@@ -698,9 +1018,9 @@
                                 <div class="timeline-item-horizontal animate-on-scroll fade-in-up stagger-4">
                                     <div class="timeline-content">
                                         <div class="timeline-summary" data-target-details="details-job-5">
-                                            <h4 class="text-base font-semibold text-gray-800">Intern Engineer</h4>
-                                            <p class="text-xs text-gray-500 font-medium mt-1 mb-1">GD Mission Systems</p>
-                                            <p class="text-xs text-gray-400 font-medium mb-2">Mar 2020 - Jun 2020</p>
+                                            <h4 class="text-base font-semibold text-gray-100">Intern Engineer</h4>
+                                            <p class="text-xs text-gray-400 font-medium mt-1 mb-1">GD Mission Systems</p>
+                                            <p class="text-xs text-gray-500 font-medium mb-2">Mar 2020 - Jun 2020</p>
                                             <span class="view-details-link text-xs font-medium">View Details</span>
                                         </div>
                                         <div id="details-job-5" class="hidden">
@@ -723,65 +1043,66 @@
                  </div>
 
                 <div>
-                    <h3 class="text-2xl font-medium text-gray-700 mb-14 text-center animate-on-scroll fade-in-left">Professional Skills</h3> <div class="skills-marquee-container animate-on-scroll fade-in-up">
+                    <h3 class="text-2xl font-medium text-gray-200 mb-14 text-center animate-on-scroll fade-in-left">Professional Skills</h3>
+                    <div class="skills-marquee-container animate-on-scroll fade-in-up">
                         <div class="skills-marquee-inner">
                             <div>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Ansible</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Docker</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">CI/CD</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Jenkins</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Python</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Bash</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Linux (RHEL)</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Git</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Bitbucket & Jira</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">GitLab</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">GitHub</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">PowerShell</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">SQL</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">PostgreSQL</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">MySQL</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Ollama LLM</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Agile</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Grafana</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Artifactory</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Anaconda</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">C/C++</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Log Analysis</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">VS Code</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Jupyter</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Tomcat</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Apache HTTPD</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Windows Server</span>
+                                <span class="skill-tag bg-blue-skill">Ansible</span>
+                                <span class="skill-tag bg-sky-skill">Docker</span>
+                                <span class="skill-tag bg-blue-skill">CI/CD</span>
+                                <span class="skill-tag bg-sky-skill">Jenkins</span>
+                                <span class="skill-tag bg-blue-skill">Python</span>
+                                <span class="skill-tag bg-sky-skill">Bash</span>
+                                <span class="skill-tag bg-blue-skill">Linux (RHEL)</span>
+                                <span class="skill-tag bg-sky-skill">Git</span>
+                                <span class="skill-tag bg-blue-skill">Bitbucket & Jira</span>
+                                <span class="skill-tag bg-sky-skill">GitLab</span>
+                                <span class="skill-tag bg-blue-skill">GitHub</span>
+                                <span class="skill-tag bg-sky-skill">PowerShell</span>
+                                <span class="skill-tag bg-blue-skill">SQL</span>
+                                <span class="skill-tag bg-sky-skill">PostgreSQL</span>
+                                <span class="skill-tag bg-blue-skill">MySQL</span>
+                                <span class="skill-tag bg-sky-skill">Ollama LLM</span>
+                                <span class="skill-tag bg-blue-skill">Agile</span>
+                                <span class="skill-tag bg-sky-skill">Grafana</span>
+                                <span class="skill-tag bg-blue-skill">Artifactory</span>
+                                <span class="skill-tag bg-sky-skill">Anaconda</span>
+                                <span class="skill-tag bg-blue-skill">C/C++</span>
+                                <span class="skill-tag bg-sky-skill">Log Analysis</span>
+                                <span class="skill-tag bg-blue-skill">VS Code</span>
+                                <span class="skill-tag bg-sky-skill">Jupyter</span>
+                                <span class="skill-tag bg-blue-skill">Tomcat</span>
+                                <span class="skill-tag bg-sky-skill">Apache HTTPD</span>
+                                <span class="skill-tag bg-blue-skill">Windows Server</span>
                             </div>
                             <div aria-hidden="true">
-                                <span class="skill-tag bg-blue-100 text-blue-800">Ansible</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Docker</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">CI/CD</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Jenkins</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Python</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Bash</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Linux (RHEL)</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Git</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Bitbucket & Jira</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">GitLab</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">GitHub</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">PowerShell</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">SQL</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">PostgreSQL</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">MySQL</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Ollama LLM</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Agile</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Grafana</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Artifactory</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Anaconda</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">C/C++</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Log Analysis</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">VS Code</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Jupyter</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Tomcat</span>
-                                <span class="skill-tag bg-teal-100 text-teal-800">Apache HTTPD</span>
-                                <span class="skill-tag bg-blue-100 text-blue-800">Windows Server</span>
+                                <span class="skill-tag bg-blue-skill">Ansible</span>
+                                <span class="skill-tag bg-sky-skill">Docker</span>
+                                <span class="skill-tag bg-blue-skill">CI/CD</span>
+                                <span class="skill-tag bg-sky-skill">Jenkins</span>
+                                <span class="skill-tag bg-blue-skill">Python</span>
+                                <span class="skill-tag bg-sky-skill">Bash</span>
+                                <span class="skill-tag bg-blue-skill">Linux (RHEL)</span>
+                                <span class="skill-tag bg-sky-skill">Git</span>
+                                <span class="skill-tag bg-blue-skill">Bitbucket & Jira</span>
+                                <span class="skill-tag bg-sky-skill">GitLab</span>
+                                <span class="skill-tag bg-blue-skill">GitHub</span>
+                                <span class="skill-tag bg-sky-skill">PowerShell</span>
+                                <span class="skill-tag bg-blue-skill">SQL</span>
+                                <span class="skill-tag bg-sky-skill">PostgreSQL</span>
+                                <span class="skill-tag bg-blue-skill">MySQL</span>
+                                <span class="skill-tag bg-sky-skill">Ollama LLM</span>
+                                <span class="skill-tag bg-blue-skill">Agile</span>
+                                <span class="skill-tag bg-sky-skill">Grafana</span>
+                                <span class="skill-tag bg-blue-skill">Artifactory</span>
+                                <span class="skill-tag bg-sky-skill">Anaconda</span>
+                                <span class="skill-tag bg-blue-skill">C/C++</span>
+                                <span class="skill-tag bg-sky-skill">Log Analysis</span>
+                                <span class="skill-tag bg-blue-skill">VS Code</span>
+                                <span class="skill-tag bg-sky-skill">Jupyter</span>
+                                <span class="skill-tag bg-blue-skill">Tomcat</span>
+                                <span class="skill-tag bg-sky-skill">Apache HTTPD</span>
+                                <span class="skill-tag bg-blue-skill">Windows Server</span>
                             </div>
                         </div>
                     </div>
@@ -791,9 +1112,11 @@
 
         <section id="contact" class="py-24 md:py-32 px-6">
             <div class="container mx-auto text-center">
-                <h2 class="section-title text-3xl md:text-4xl font-semibold text-gray-800 mb-10 animate-on-scroll fade-in-down">Get In Touch</h2> <p class="text-base md:text-lg text-gray-600 mb-14 max-w-xl mx-auto animate-on-scroll fade-in-up stagger-1 leading-relaxed"> Interested in collaborating or have a question? Feel free to reach out.
+                <h2 class="section-title text-3xl md:text-4xl font-semibold mb-10 animate-on-scroll fade-in-down">Get In Touch</h2>
+                <p class="text-base md:text-lg text-gray-400 mb-14 max-w-xl mx-auto animate-on-scroll fade-in-up stagger-1 leading-relaxed"> Interested in collaborating or have a question? Feel free to reach out.
                 </p>
-                <div class="flex justify-center items-center space-x-12 md:space-x-16 animate-on-scroll zoom-in stagger-2"> <a href="mailto:peteraldrichir@gmail.com" class="contact-link group flex flex-col items-center text-center transition duration-300">
+                <div class="flex justify-center items-center space-x-12 md:space-x-16 animate-on-scroll zoom-in stagger-2">
+                    <a href="mailto:peteraldrichir@gmail.com" class="contact-link group flex flex-col items-center text-center transition duration-300">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2 feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                         <span class="text-sm font-medium">Email</span>
                     </a>
@@ -814,15 +1137,20 @@
     <div id="timeline-modal" class="hidden">
         <div id="modal-background" class="absolute inset-0 cursor-pointer"></div>
         <div id="modal-content-container">
-            <button id="modal-close-button" aria-label="Close details" class="focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2 rounded-full"> <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <button id="modal-close-button" aria-label="Close details" class="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 rounded-full">
+                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
-            <h3 id="modal-title" class="text-2xl font-semibold mb-2"></h3> <p id="modal-subtitle" class="text-sm text-gray-500 font-medium mb-6"></p> <div id="modal-details-content" class="text-gray-700 text-base leading-relaxed"> </div>
+            <h3 id="modal-title" class="text-2xl font-semibold mb-2"></h3>
+            <p id="modal-subtitle" class="text-sm font-medium mb-6"></p>
+            <div id="modal-details-content" class="text-base leading-relaxed"></div>
         </div>
     </div>
 
 
-    <footer class="bg-white text-gray-500 py-10 text-center text-sm"> <div class="container mx-auto">
+    <footer class="py-10 text-center text-sm">
+        <div class="container mx-auto">
             <p>&copy; <span id="currentYear"></span> Peter Aldrich Jr. All rights reserved.</p>
         </div>
     </footer>
@@ -892,7 +1220,10 @@
             if (detailsHiddenDiv && modal && modalContentContainer && modalTitle && modalSubtitle && modalDetailsContent) {
                 modalTitle.textContent = title;
                 modalSubtitle.textContent = subtitleText;
+                // Inject HTML, basic script removal (consider a sanitizer for production)
                 modalDetailsContent.innerHTML = detailsHiddenDiv.innerHTML.replace(/<script.*?>.*?<\/script>/gi, '');
+                // Apply dark mode text color to list items if needed
+                modalDetailsContent.querySelectorAll('li').forEach(li => li.classList.add('text-gray-300'));
 
                 modal.classList.remove('hidden');
                 document.body.classList.add('modal-open');
@@ -1015,9 +1346,9 @@
                     }
                 } else {
                      // Optional: Reset animation if element scrolls out of view and you want it to re-animate
-                     // if (target.classList.contains('section-title')) {
-                     //     target.classList.remove('is-visible');
-                     // }
+                     if (target.classList.contains('section-title')) { // Only reset titles if needed
+                         target.classList.remove('is-visible');
+                     }
                 }
             });
         };
