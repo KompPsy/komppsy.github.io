@@ -299,11 +299,16 @@
             };
 
             async function fetchSuggestions(query) {
-                const API_URL = `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(query)}&include_profiles=false&limit=5&raw_json=1`;
-                const response = await fetch(API_URL, { headers: { 'User-agent': 'RabbitSearch 1.0' } });
-                if (!response.ok) return [];
-                const data = await response.json();
-                return data?.data?.children?.map(c => c.data) || [];
+                 try {
+                    const API_URL = `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(query)}&include_profiles=false&limit=5&raw_json=1`;
+                    const response = await fetch(API_URL);
+                    if (!response.ok) return [];
+                    const data = await response.json();
+                    return data?.data?.children?.map(c => c.data) || [];
+                } catch (error) {
+                    console.error("Suggestion fetch using 'fetch' failed, falling back.", error);
+                    return []; // Return empty on error to prevent breaking the UI
+                }
             }
 
             function renderSuggestions(suggestions, inputElement, container, list) {
@@ -374,33 +379,52 @@
 
                 } catch (error) {
                     console.error("Search failed:", error);
-                    errorText.textContent = "Could not connect to Reddit. This can happen due to network issues or browser security settings. Please try again in a moment.";
+                    errorText.textContent = error.message;
                     errorMessage.classList.remove('hidden');
                 } finally {
                     loader.classList.add('hidden');
                 }
             }
+            
+            function fetchReddit(query, sort) {
+                return new Promise((resolve, reject) => {
+                    const effectiveSort = sort === 'oldest' ? 'new' : sort;
+                    const callbackName = 'redditCallback' + Date.now();
+                    const script = document.createElement('script');
+                    script.src = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=100&sort=${effectiveSort}&raw_json=1&jsonp=${callbackName}`;
 
-            async function fetchReddit(query, sort) {
-                const effectiveSort = sort === 'oldest' ? 'new' : sort;
-                const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=100&sort=${effectiveSort}&raw_json=1`;
-                const response = await fetch(API_URL, { headers: { 'User-agent': 'RabbitSearch 1.0' } });
-                if (!response.ok) throw new Error(`Reddit API Error: ${response.status} ${response.statusText}`);
-                const data = await response.json();
-                if (!data.data || !data.data.children) return [];
+                    window[callbackName] = (data) => {
+                        document.body.removeChild(script);
+                        delete window[callbackName];
+                        
+                        if (!data.data || !data.data.children) {
+                            resolve([]);
+                            return;
+                        }
 
-                return data.data.children.map(({ data: item }) => ({
-                    title: item.title || 'Untitled Post',
-                    url: item.permalink ? `https://www.reddit.com${item.permalink}` : '#',
-                    description: item.selftext || '',
-                    timestamp: new Date((item.created_utc || 0) * 1000),
-                    score: item.score || 0,
-                    comments: item.num_comments || 0,
-                    subreddit: item.subreddit_name_prefixed || 'r/unknown',
-                    author: item.author || '[deleted]',
-                    image_url: item.url_overridden_by_dest,
-                    post_hint: item.post_hint
-                }));
+                        const results = data.data.children.map(({ data: item }) => ({
+                            title: item.title || 'Untitled Post',
+                            url: item.permalink ? `https://www.reddit.com${item.permalink}` : '#',
+                            description: item.selftext || '',
+                            timestamp: new Date((item.created_utc || 0) * 1000),
+                            score: item.score || 0,
+                            comments: item.num_comments || 0,
+                            subreddit: item.subreddit_name_prefixed || 'r/unknown',
+                            author: item.author || '[deleted]',
+                            image_url: item.url_overridden_by_dest,
+                            post_hint: item.post_hint
+                        }));
+                        resolve(results);
+                    };
+
+                    script.onerror = () => {
+                        document.body.removeChild(script);
+                        delete window[callbackName];
+                        reject(new Error('Could not connect to Reddit. This may be due to a network issue or browser security settings (like a content blocker). Please try again in a moment.'));
+                    };
+                    
+                    document.body.appendChild(script);
+                });
             }
 
             // --- RENDERING ---
