@@ -45,10 +45,16 @@
                 <i class="fab fa-reddit text-orange-500"></i> ReddSearch
             </a>
             <div class="relative flex-grow max-w-2xl mx-auto">
-                <input type="text" id="top-search-input" placeholder="Search Reddit..." class="w-full h-12 pl-4 pr-14 rounded-full text-md bg-slate-100 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 dark:text-slate-300">
+                <input type="text" id="top-search-input" placeholder="Search Reddit..." class="w-full h-12 pl-4 pr-14 rounded-full text-md bg-slate-100 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 dark:text-slate-300" autocomplete="off">
                 <button id="top-search-button" class="absolute right-1 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
                     <i class="fas fa-search"></i>
                 </button>
+                <!-- Suggestions Dropdown for top bar -->
+                <div id="top-suggestions-container" class="hidden absolute w-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg z-10 overflow-hidden">
+                    <ul id="top-suggestions-list">
+                        <!-- Suggestion items will be injected here -->
+                    </ul>
+                </div>
             </div>
         </div>
     </header>
@@ -63,11 +69,19 @@
                     </h1>
                     <p class="text-slate-500 dark:text-slate-400 mt-2">The front page of the internet, at your command.</p>
                 </div>
-                <div class="relative bg-white dark:bg-slate-800 rounded-full shadow-lg">
-                    <input type="text" id="hero-search-input" placeholder="Search Reddit..." class="w-full h-16 pl-6 pr-20 rounded-full text-lg bg-transparent focus:outline-none text-slate-700 dark:text-slate-300">
-                    <button id="hero-search-button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-14 h-14 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
-                        <i class="fas fa-search text-xl"></i>
-                    </button>
+                <div class="relative">
+                    <div class="relative bg-white dark:bg-slate-800 rounded-full shadow-lg">
+                        <input type="text" id="hero-search-input" placeholder="Search Reddit..." class="w-full h-16 pl-6 pr-20 rounded-full text-lg bg-transparent focus:outline-none text-slate-700 dark:text-slate-300" autocomplete="off">
+                        <button id="hero-search-button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-14 h-14 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
+                            <i class="fas fa-search text-xl"></i>
+                        </button>
+                    </div>
+                    <!-- Suggestions Dropdown -->
+                    <div id="hero-suggestions-container" class="hidden absolute w-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg z-10 overflow-hidden">
+                        <ul id="hero-suggestions-list">
+                            <!-- Suggestion items will be injected here -->
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,9 +147,24 @@
             const heroSearchButton = document.getElementById('hero-search-button');
             const topSearchInput = document.getElementById('top-search-input');
             const topSearchButton = document.getElementById('top-search-button');
+
+            // Suggestions Elements
+            const heroSuggestionsContainer = document.getElementById('hero-suggestions-container');
+            const heroSuggestionsList = document.getElementById('hero-suggestions-list');
+            const topSuggestionsContainer = document.getElementById('top-suggestions-container');
+            const topSuggestionsList = document.getElementById('top-suggestions-list');
             
             let currentQuery = '';
 
+            // --- UTILITY FUNCTIONS ---
+            const debounce = (func, delay) => {
+                let timeout;
+                return (...args) => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func(...args), delay);
+                };
+            };
+            
             // --- EVENT LISTENERS ---
             heroSearchButton.addEventListener('click', () => handleSearch(heroSearchInput.value));
             heroSearchInput.addEventListener('keyup', (e) => {
@@ -146,47 +175,107 @@
                 if (e.key === 'Enter') handleSearch(topSearchInput.value);
             });
             sortFilter.addEventListener('change', () => {
-                 if (currentQuery) {
-                    performSearch(currentQuery);
-                 }
+                 if (currentQuery) performSearch(currentQuery);
             });
             logoLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 window.location.reload();
             });
+
+            // --- SUGGESTIONS LOGIC ---
+            const onHeroInputChange = async (event) => onInputChange(event.target.value, heroSearchInput, heroSuggestionsContainer, heroSuggestionsList);
+            const onTopInputChange = async (event) => onInputChange(event.target.value, topSearchInput, topSuggestionsContainer, topSuggestionsList);
+
+            heroSearchInput.addEventListener('input', debounce(onHeroInputChange, 300));
+            topSearchInput.addEventListener('input', debounce(onTopInputChange, 300));
+
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!heroSearchContainer.contains(e.target)) {
+                    heroSuggestionsContainer.classList.add('hidden');
+                }
+                if (!header.contains(e.target)) {
+                    topSuggestionsContainer.classList.add('hidden');
+                }
+            });
             
+            const onInputChange = async (query, inputElement, container, list) => {
+                if (query.length < 2) {
+                    container.classList.add('hidden');
+                    return;
+                }
+                try {
+                    const suggestions = await fetchSuggestions(query);
+                    renderSuggestions(suggestions, inputElement, container, list);
+                } catch (error) {
+                    console.error('Suggestion fetch failed:', error);
+                    container.classList.add('hidden');
+                }
+            };
+
+            async function fetchSuggestions(query) {
+                const API_URL = `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(query)}&include_profiles=false&limit=5`;
+                const response = await fetch(API_URL, { headers: { 'User-agent': 'ReddSearch 1.0' } });
+                if (!response.ok) return [];
+                const data = await response.json();
+                return data?.data?.children?.map(c => c.data) || [];
+            }
+
+            function renderSuggestions(suggestions, inputElement, container, list) {
+                if (suggestions.length === 0) {
+                    container.classList.add('hidden');
+                    return;
+                }
+                list.innerHTML = '';
+                suggestions.forEach(sub => {
+                    const li = document.createElement('li');
+                    li.className = 'px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between';
+                    li.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <img src="${sub.icon_img || 'https://www.redditstatic.com/desktop2x/img/id-cards/snoo-home@2x.png'}" class="w-6 h-6 rounded-full" alt="">
+                            <span class="font-medium">${sub.display_name_prefixed}</span>
+                        </div>
+                        <span class="text-sm text-slate-500">${(sub.subscribers || 0).toLocaleString()} members</span>
+                    `;
+                    li.addEventListener('click', () => {
+                        const searchQuery = `subreddit:${sub.display_name}`;
+                        inputElement.value = searchQuery;
+                        container.classList.add('hidden');
+                        handleSearch(searchQuery);
+                    });
+                    list.appendChild(li);
+                });
+                container.classList.remove('hidden');
+            }
+
+
             // --- Main Search Handler ---
             function handleSearch(query) {
                 const trimmedQuery = query.trim();
                 if (!trimmedQuery) return;
                 currentQuery = trimmedQuery;
+                heroSuggestionsContainer.classList.add('hidden');
+                topSuggestionsContainer.classList.add('hidden');
                 performSearch(trimmedQuery);
             }
             
-            /**
-             * Builds a more robust query for the Reddit API.
-             * If the user enters multiple words, it wraps them in quotes to perform a phrase search.
-             * This provides more relevant results for sentences or specific phrases.
-             * @param {string} query The raw user input.
-             * @returns {string} A formatted query string.
-             */
             function buildAdvancedQuery(query) {
                 const trimmedQuery = query.trim();
-                // If the query is already quoted, leave it.
-                if ((trimmedQuery.startsWith('"') && trimmedQuery.endsWith('"'))) {
+                // If it looks like a subreddit filter, leave it
+                if (trimmedQuery.toLowerCase().startsWith('subreddit:')) {
                     return trimmedQuery;
                 }
-                // If it contains a space, it's likely a phrase. Quote it for better relevance.
+                if (trimmedQuery.startsWith('"') && trimmedQuery.endsWith('"')) {
+                    return trimmedQuery;
+                }
                 if (trimmedQuery.includes(' ')) {
                     return `"${trimmedQuery}"`;
                 }
-                // Otherwise, it's a single keyword.
                 return trimmedQuery;
             }
 
             // --- API FETCHING ---
             async function performSearch(query) {
-                // Transition UI
                 heroSearchContainer.classList.add('hidden');
                 header.classList.remove('hidden');
                 topSearchInput.value = query;
@@ -210,7 +299,6 @@
                     if (results.length === 0) {
                         noResults.classList.remove('hidden');
                     } else {
-                        // Reddit API doesn't sort by oldest, so we do it client-side
                         if (sort === 'oldest') {
                             results.sort((a, b) => a.timestamp - b.timestamp);
                         }
@@ -227,7 +315,6 @@
             }
 
             async function fetchReddit(query, sort) {
-                // The reddit API doesn't have an "oldest" sort, so we fetch by new and reverse it later if needed.
                 const effectiveSort = sort === 'oldest' ? 'new' : sort;
                 const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=25&sort=${effectiveSort}`;
                 
@@ -240,7 +327,6 @@
                 }
 
                 return data.data.children.map(({ data: item }) => ({
-                    source: 'Reddit',
                     title: item.title,
                     url: `https://www.reddit.com${item.permalink}`,
                     description: item.selftext,
