@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReddSearch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .dark body {
+            background-color: #020617;
+        }
+        .result-item {
+             border-bottom: 1px solid #e2e8f0;
+             padding-bottom: 1.5rem;
+             margin-bottom: 1.5rem;
+        }
+        .dark .result-item {
+            border-bottom-color: #1e293b;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .loader {
+            border-top-color: #ff4500; /* Reddit Orange */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+
+    <!-- Header with smaller search bar (initially hidden) -->
+    <header id="header" class="hidden sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-md p-2">
+        <div class="container mx-auto flex items-center gap-4">
+             <a href="#" id="logo-link" class="text-2xl font-bold text-slate-800 dark:text-white flex-shrink-0 flex items-center gap-2">
+                <i class="fab fa-reddit text-orange-500"></i> ReddSearch
+            </a>
+            <div class="relative flex-grow max-w-2xl mx-auto">
+                <input type="text" id="top-search-input" placeholder="Search Reddit..." class="w-full h-12 pl-4 pr-14 rounded-full text-md bg-slate-100 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 dark:text-slate-300">
+                <button id="top-search-button" class="absolute right-1 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="main-container" class="min-h-screen">
+        <!-- Hero Search Container (initially visible) -->
+        <div id="hero-search-container" class="flex items-center justify-center min-h-screen">
+             <div class="w-full max-w-2xl px-4">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl md:text-5xl font-bold text-slate-800 dark:text-white flex items-center justify-center gap-3">
+                        <i class="fab fa-reddit text-orange-500"></i> ReddSearch
+                    </h1>
+                    <p class="text-slate-500 dark:text-slate-400 mt-2">The front page of the internet, at your command.</p>
+                </div>
+                <div class="relative bg-white dark:bg-slate-800 rounded-full shadow-lg">
+                    <input type="text" id="hero-search-input" placeholder="Search Reddit..." class="w-full h-16 pl-6 pr-20 rounded-full text-lg bg-transparent focus:outline-none text-slate-700 dark:text-slate-300">
+                    <button id="hero-search-button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-14 h-14 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
+                        <i class="fas fa-search text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-section" class="hidden container mx-auto p-4 md:p-6 lg:max-w-4xl">
+            <!-- Filter Controls -->
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <p id="results-stats" class="text-sm text-slate-600 dark:text-slate-400"></p>
+                <div>
+                    <label for="sort-filter" class="mr-2 text-slate-600 dark:text-slate-400">Sort by:</label>
+                    <select id="sort-filter" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option value="relevance">Relevance</option>
+                        <option value="new">Newest</option>
+                        <option value="top">Most Popular</option>
+                        <option value="comments">Most Comments</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loader" class="text-center py-10 hidden">
+                 <div class="loader ease-linear rounded-full border-8 border-t-8 border-slate-200 h-32 w-32 mx-auto"></div>
+                 <p class="mt-4 text-lg">Searching Reddit...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="text-center py-10 hidden">
+                <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold">Oops! Something went wrong.</h3>
+                <p id="error-text" class="text-slate-500 dark:text-slate-400 mt-2"></p>
+            </div>
+            
+            <!-- Results List -->
+            <div id="results-list" class="flex flex-col">
+                <!-- Result items will be injected here -->
+            </div>
+             <div id="no-results" class="text-center py-10 hidden">
+                <i class="fas fa-search text-slate-400 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold">No Results Found</h3>
+                <p class="text-slate-500 dark:text-slate-400 mt-2">Try a different search query or check for typos.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const header = document.getElementById('header');
+            const heroSearchContainer = document.getElementById('hero-search-container');
+            const resultsSection = document.getElementById('results-section');
+            const resultsList = document.getElementById('results-list');
+            const resultsStats = document.getElementById('results-stats');
+            const loader = document.getElementById('loader');
+            const noResults = document.getElementById('no-results');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const sortFilter = document.getElementById('sort-filter');
+            const logoLink = document.getElementById('logo-link');
+
+            // Search inputs and buttons
+            const heroSearchInput = document.getElementById('hero-search-input');
+            const heroSearchButton = document.getElementById('hero-search-button');
+            const topSearchInput = document.getElementById('top-search-input');
+            const topSearchButton = document.getElementById('top-search-button');
+            
+            let currentQuery = '';
+
+            // --- EVENT LISTENERS ---
+            heroSearchButton.addEventListener('click', () => handleSearch(heroSearchInput.value));
+            heroSearchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') handleSearch(heroSearchInput.value);
+            });
+            topSearchButton.addEventListener('click', () => handleSearch(topSearchInput.value));
+            topSearchInput.addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') handleSearch(topSearchInput.value);
+            });
+            sortFilter.addEventListener('change', () => {
+                 if (currentQuery) {
+                    performSearch(currentQuery);
+                 }
+            });
+            logoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.reload();
+            });
+            
+            // --- Main Search Handler ---
+            function handleSearch(query) {
+                const trimmedQuery = query.trim();
+                if (!trimmedQuery) return;
+                currentQuery = trimmedQuery;
+                performSearch(trimmedQuery);
+            }
+            
+            /**
+             * Builds a more robust query for the Reddit API.
+             * If the user enters multiple words, it wraps them in quotes to perform a phrase search.
+             * This provides more relevant results for sentences or specific phrases.
+             * @param {string} query The raw user input.
+             * @returns {string} A formatted query string.
+             */
+            function buildAdvancedQuery(query) {
+                const trimmedQuery = query.trim();
+                // If the query is already quoted, leave it.
+                if ((trimmedQuery.startsWith('"') && trimmedQuery.endsWith('"'))) {
+                    return trimmedQuery;
+                }
+                // If it contains a space, it's likely a phrase. Quote it for better relevance.
+                if (trimmedQuery.includes(' ')) {
+                    return `"${trimmedQuery}"`;
+                }
+                // Otherwise, it's a single keyword.
+                return trimmedQuery;
+            }
+
+            // --- API FETCHING ---
+            async function performSearch(query) {
+                // Transition UI
+                heroSearchContainer.classList.add('hidden');
+                header.classList.remove('hidden');
+                topSearchInput.value = query;
+                resultsSection.classList.remove('hidden');
+                resultsList.innerHTML = '';
+                loader.classList.remove('hidden');
+                noResults.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+                
+                const sort = sortFilter.value;
+                const startTime = performance.now();
+                const advancedQuery = buildAdvancedQuery(query);
+                
+                try {
+                    const results = await fetchReddit(advancedQuery, sort);
+                    
+                    const endTime = performance.now();
+                    const searchTime = ((endTime - startTime) / 1000).toFixed(2);
+                    resultsStats.textContent = `${results.length.toLocaleString()} results found in ${searchTime} seconds.`;
+                    
+                    if (results.length === 0) {
+                        noResults.classList.remove('hidden');
+                    } else {
+                        // Reddit API doesn't sort by oldest, so we do it client-side
+                        if (sort === 'oldest') {
+                            results.sort((a, b) => a.timestamp - b.timestamp);
+                        }
+                        renderResults(results);
+                    }
+
+                } catch (error) {
+                    console.error("Search failed:", error);
+                    errorText.textContent = error.message || "An unknown error occurred. Please check your network and try again.";
+                    errorMessage.classList.remove('hidden');
+                } finally {
+                    loader.classList.add('hidden');
+                }
+            }
+
+            async function fetchReddit(query, sort) {
+                // The reddit API doesn't have an "oldest" sort, so we fetch by new and reverse it later if needed.
+                const effectiveSort = sort === 'oldest' ? 'new' : sort;
+                const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=25&sort=${effectiveSort}`;
+                
+                const response = await fetch(API_URL, { headers: { 'User-agent': 'ReddSearch 1.0' } });
+                if (!response.ok) throw new Error(`Reddit API Error: ${response.status} ${response.statusText}`);
+                const data = await response.json();
+                
+                if (!data.data || !data.data.children) {
+                    return [];
+                }
+
+                return data.data.children.map(({ data: item }) => ({
+                    source: 'Reddit',
+                    title: item.title,
+                    url: `https://www.reddit.com${item.permalink}`,
+                    description: item.selftext,
+                    timestamp: new Date(item.created_utc * 1000),
+                    score: item.score,
+                    comments: item.num_comments,
+                    subreddit: item.subreddit_name_prefixed,
+                    author: item.author,
+                }));
+            }
+
+            // --- RENDERING ---
+            function renderResults(results) {
+                resultsList.innerHTML = '';
+                results.forEach(result => {
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    
+                    const descriptionHtml = (result.description || '').substring(0, 280) + (result.description.length > 280 ? '...' : '');
+
+                    item.innerHTML = `
+                        <div>
+                             <div class="flex items-center gap-2 text-sm mb-1 text-slate-500">
+                                <span>${result.subreddit}</span>
+                                <span class="mx-1">•</span>
+                                <span>Posted by u/${result.author}</span>
+                             </div>
+                            <a href="${result.url}" target="_blank" rel="noopener noreferrer" class="block">
+                                <h3 class="text-xl font-medium text-blue-600 hover:underline dark:text-blue-400">${result.title}</h3>
+                            </a>
+                            <div class="text-slate-600 dark:text-slate-400 text-sm mt-1 snippet-container">
+                                ${descriptionHtml}
+                            </div>
+                            <div class="text-sm text-slate-500 mt-3 flex items-center gap-x-6">
+                                <span title="Score"><i class="fas fa-arrow-up fa-fw"></i> ${result.score.toLocaleString()}</span>
+                                <span title="Comments"><i class="fas fa-comment fa-fw"></i> ${result.comments.toLocaleString()}</span>
+                                <span title="Date"><i class="fas fa-clock fa-fw"></i> ${result.timestamp.toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    `;
+                    resultsList.appendChild(item);
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
