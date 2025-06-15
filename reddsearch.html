@@ -55,12 +55,16 @@
             height: 150px;
             object-fit: cover;
         }
+        .frosted-glass {
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
 
     <!-- Header with smaller search bar (initially hidden) -->
-    <header id="header" class="hidden sticky top-0 z-40 bg-white dark:bg-slate-800 shadow-md p-2">
+    <header id="header" class="hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 shadow-md p-2 frosted-glass">
         <div class="container mx-auto flex items-center gap-4">
              <a href="#" id="logo-link" class="text-2xl font-bold text-slate-800 dark:text-white flex-shrink-0 flex items-center gap-2">
                 <i class="fab fa-reddit text-orange-500"></i> ReddSearch
@@ -74,7 +78,7 @@
                     <ul id="top-suggestions-list"></ul>
                 </div>
             </div>
-            <button id="filter-toggle-button" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600">
+            <button id="filter-toggle-button" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-300/70 dark:hover:bg-slate-600/70">
                 <i class="fas fa-sliders-h"></i>
                 <span>Filters</span>
             </button>
@@ -82,7 +86,7 @@
     </header>
     
     <!-- Expandable Filters Section -->
-    <div id="expandable-filters" class="hidden sticky top-[64px] z-30 bg-white dark:bg-slate-800 p-4 shadow-lg border-t border-slate-200 dark:border-slate-700">
+    <div id="expandable-filters" class="hidden sticky top-[64px] z-30 bg-white/80 dark:bg-slate-800/80 p-4 shadow-lg border-t border-slate-200 dark:border-slate-700 frosted-glass">
         <div class="container mx-auto flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
             <div class="flex items-center gap-3">
                 <span class="font-medium text-slate-600 dark:text-slate-300">Search Type:</span>
@@ -93,7 +97,7 @@
             </div>
             <div class="flex items-center gap-2">
                  <label for="sort-filter" class="font-medium text-slate-600 dark:text-slate-300">Sort by:</label>
-                 <select id="sort-filter" class="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                 <select id="sort-filter" class="bg-white/50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
                      <option value="relevance">Relevance</option>
                      <option value="new">Newest</option>
                      <option value="top">Most Popular</option>
