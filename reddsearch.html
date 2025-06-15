@@ -8,12 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
         }
         .dark body {
             background-color: #020617;
+        }
+        #main-container {
+            width: 100vw;
         }
         .result-item {
              border-bottom: 1px solid #e2e8f0;
@@ -78,9 +85,8 @@
                     <ul id="top-suggestions-list"></ul>
                 </div>
             </div>
-            <button id="filter-toggle-button" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-300/70 dark:hover:bg-slate-600/70">
-                <i class="fas fa-sliders-h"></i>
-                <span>Filters</span>
+            <button id="filter-toggle-button" title="Filters" class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-slate-200/50 dark:bg-slate-700/50 hover:bg-slate-300/70 dark:hover:bg-slate-600/70">
+                <i class="fas fa-sliders-h text-xl"></i>
             </button>
         </div>
     </header>
@@ -116,7 +122,6 @@
                     <h1 class="text-4xl md:text-5xl font-bold text-slate-800 dark:text-white flex items-center justify-center gap-3">
                         <i class="fab fa-reddit text-orange-500"></i> ReddSearch
                     </h1>
-                    <p class="text-slate-500 dark:text-slate-400 mt-2">The front page of the internet, at your command.</p>
                 </div>
                 <div class="relative">
                     <div class="relative bg-white dark:bg-slate-800 rounded-full shadow-lg">
@@ -331,14 +336,6 @@
                 topSuggestionsContainer.classList.add('hidden');
                 performSearch(trimmedQuery);
             }
-            
-            function buildAdvancedQuery(query) {
-                let finalQuery = query.trim();
-                if (finalQuery.toLowerCase().startsWith('subreddit:')) return finalQuery;
-                if (finalQuery.startsWith('"') && finalQuery.endsWith('"')) return finalQuery;
-                if (finalQuery.includes(' ')) return `"${finalQuery}"`;
-                return finalQuery;
-            }
 
             // --- API FETCHING ---
             async function performSearch(query) {
@@ -355,10 +352,9 @@
                 
                 const sort = sortFilter.value;
                 const startTime = performance.now();
-                const advancedQuery = buildAdvancedQuery(query);
                 
                 try {
-                    let results = await fetchReddit(advancedQuery, sort);
+                    let results = await fetchReddit(query, sort);
                     let finalResults = results;
 
                     if (searchType === 'images') {
