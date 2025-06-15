@@ -1,680 +1,277 @@
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>InfraSearch</title>
-                <script src="https://cdn.tailwindcss.com"></script>
-                <link rel="preconnect" href="https://fonts.googleapis.com">
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-                <style>
-                    :root {
-                        --background-start-rgb: 238, 242, 247;
-                        --background-end-rgb: 224, 231, 239;
-                        --text-color: #334155; /* Slate-700 */
-                        --text-light-color: #64748b; /* Slate-500 */
-                        --link-color: #2563eb; /* Blue-600 */
-                        --link-hover-color: #1d4ed8; /* Blue-700 */
-                        --border-color: rgba(203, 213, 225, 0.4); /* Slate-300 with alpha */
-                        --header-border-color: rgba(203, 213, 225, 0.6);
-                        --card-bg-color: rgba(255, 255, 255, 0.7);
-                        --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-                        --card-hover-bg: rgba(255, 255, 255, 0.85);
-                        --input-bg-color: rgba(255, 255, 255, 0.7);
-                        --input-focus-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-                        --button-bg: #3b82f6; /* Blue-500 */
-                        --button-hover-bg: #2563eb; /* Blue-600 */
-                        /* Filter variables removed */
-                        --header-bg-color: rgba(248, 250, 252, 0.8); /* Slightly more opaque */
-                        /* Header title width no longer needed for balancing */
-                        /* --header-title-width: 150px; */
-                    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfraSearch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .search-container {
+            transition: all 0.3s ease-in-out;
+        }
+        .search-bar-top {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+        }
+        .search-bar-center {
+            min-height: calc(100vh - 4rem);
+        }
+        .result-card {
+            border: 1px solid #e5e7eb;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .loader {
+            border-top-color: #3b82f6;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
-                    body {
-                        font-family: 'Inter', sans-serif;
-                        background: linear-gradient(135deg, rgb(var(--background-start-rgb)), rgb(var(--background-end-rgb)));
-                        color: var(--text-color);
-                        display: flex;
-                        flex-direction: column;
-                        min-height: 100vh;
-                        overflow-x: hidden;
-                        -webkit-font-smoothing: antialiased;
-                        -moz-osx-font-smoothing: grayscale;
-                    }
-
-                    /* Glassmorphism Effect */
-                    .glass {
-                        background: var(--card-bg-color);
-                        backdrop-filter: blur(10px) saturate(180%);
-                        -webkit-backdrop-filter: blur(10px) saturate(180%);
-                        border: 1px solid var(--border-color);
-                        box-shadow: var(--card-shadow);
-                    }
-
-                    /* Animations */
-                    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-                    @keyframes subtleSlideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-                    @keyframes titleFadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
-                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                    /* slideDownFadeIn animation removed */
-
-                    /* Search Container & Form */
-                    #search-container {
-                        width: 100%; padding: 1rem;
-                        transition: padding-top 0.6s ease-out, padding-bottom 0.6s ease-out, align-items 0.6s ease-out, background-color 0.3s ease, border-bottom 0.3s ease, box-shadow 0.3s ease;
-                        display: flex;
-                        flex-direction: column; /* Only wrapper inside now */
-                        justify-content: center; align-items: center;
-                        flex-grow: 1;
-                        flex-shrink: 0;
-                        position: relative;
-                    }
-                    /* Header state */
-                    #search-container.searched-state {
-                        padding: 0.5rem 1rem; /* Minimal padding for header */
-                        align-items: center; /* Center content horizontally */
-                        flex-grow: 0;
-                        background-color: var(--header-bg-color);
-                        backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%);
-                        border-bottom: 1px solid var(--header-border-color);
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-                        position: sticky; top: 0; z-index: 10;
-                    }
-                    #search-form-wrapper {
-                        display: flex;
-                        flex-direction: column; /* Default: stack title/form */
-                        align-items: center;
-                        width: 100%;
-                        max-width: 650px; /* Max width for initial state */
-                        transition: transform 0.6s ease-out, width 0.6s ease-out, max-width 0.6s ease-out;
-                    }
-                    /* Header layout for wrapper */
-                    #search-container.searched-state #search-form-wrapper {
-                        flex-direction: row; /* Title and form side-by-side */
-                        justify-content: center; /* Center title and form */
-                        align-items: center;
-                        max-width: 1100px; /* Wider max-width for header content */
-                        margin: 0 auto; /* Center the wrapper content */
-                        gap: 1.5rem; /* Adjust gap as needed */
-                        width: 100%;
-                    }
-
-                    /* Initial Large Title */
-                    .initial-state-title {
-                        font-size: 2.5rem; font-weight: 700; color: var(--text-color);
-                        margin-bottom: 2rem; text-align: center;
-                        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-                        transform-origin: bottom;
-                    }
-                     @media (min-width: 640px) { .initial-state-title { font-size: 3rem; } }
-                    .initial-state-title.fade-out { animation: titleFadeOut 0.5s ease-out forwards; }
-                    .initial-state-title span { display: inline-block; }
-                    #search-container.searched-state .initial-state-title { display: none; }
-
-
-                    /* Results Page Title (Header Title) */
-                    #results-page-title {
-                        font-size: 1.1rem; font-weight: 600; color: var(--text-color);
-                        margin: 0; text-align: left;
-                        opacity: 0; transition: opacity 0.4s 0.3s ease-out; display: none;
-                        flex-shrink: 0;
-                        /* Width removed, no longer needed for balancing */
-                        /* width: var(--header-title-width); */
-                    }
-                    #search-container.searched-state #results-page-title {
-                        opacity: 1; display: block;
-                    }
-                    #results-page-title span { display: inline-block; }
-
-
-                    /* Search Form - Reduced Size */
-                    #search-form {
-                        width: 100%; display: flex; align-items: center;
-                        border-radius: 9999px;
-                        padding: 0.35rem 0.5rem 0.35rem 1.25rem;
-                        margin-bottom: 0.75rem; /* Default margin */
-                        position: relative;
-                        transition: box-shadow 0.3s ease, border-color 0.3s ease, margin-bottom 0.3s ease, max-width 0.3s ease;
-                        background: var(--input-bg-color);
-                        backdrop-filter: blur(8px) saturate(150%); -webkit-backdrop-filter: blur(8px) saturate(150%);
-                        border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-                    }
-                    /* Header state for form */
-                    #search-container.searched-state #search-form {
-                        margin-bottom: 0; /* Remove margin in header */
-                        max-width: 450px; /* Can be slightly wider now */
-                        /* Remove margin auto, centering handled by parent */
-                        /* margin-left: auto; */
-                        /* margin-right: auto; */
-                    }
-
-                    #search-form:focus-within {
-                         box-shadow: 0 0 0 3px var(--input-focus-shadow), 0 2px 10px rgba(0, 0, 0, 0.06);
-                         border-color: rgba(59, 130, 246, 0.4);
-                    }
-                    #search-input {
-                         flex-grow: 1; border: none; outline: none;
-                         padding: 0.4rem 0; font-size: 0.95rem;
-                         background: transparent; color: var(--text-color);
-                    }
-                    #search-input::placeholder { color: #94a3b8; opacity: 0.8; }
-                    /* Search Button - Reduced Size */
-                    #search-button {
-                         background: var(--button-bg); border: none; color: white; cursor: pointer;
-                         padding: 0.5rem; margin-left: 0.5rem; border-radius: 50%;
-                         width: 34px; height: 34px;
-                         display: flex; align-items: center; justify-content: center;
-                         transition: background-color 0.2s ease, transform 0.2s ease;
-                         box-shadow: 0 2px 5px rgba(59, 130, 246, 0.2);
-                    }
-                    #search-button:hover { background: var(--button-hover-bg); transform: scale(1.05); }
-                    #search-button i { font-size: 0.9rem; }
-
-                    /* Filter CSS Removed */
-                    /* #filter-toggle-button, #filter-panel, .filter-group, etc. styles removed */
-
-
-                    /* Results Area */
-                    #results-area {
-                        padding: 1rem 1rem 2rem 1rem;
-                        width: 100%; max-width: 800px;
-                        margin: 0 auto; opacity: 0;
-                        transition: opacity 0.6s 0.3s ease-out;
-                    }
-                    #results-area:not(.hidden) { opacity: 1; }
-                    .results-list { list-style: none; padding: 0; margin: 0; }
-
-                    /* Result Item - Redesigned */
-                    .result-item {
-                        padding: 1rem 1.25rem; margin-bottom: 1rem;
-                        border-radius: 0.5rem; /* Tailwind rounded-lg */
-                        transition: background-color 0.25s ease-in-out, transform 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
-                        position: relative; opacity: 0; animation: subtleSlideUp 0.5s ease-out forwards;
-                        overflow: hidden;
-                        background: var(--card-bg-color);
-                        backdrop-filter: blur(10px) saturate(180%); -webkit-backdrop-filter: blur(10px) saturate(180%);
-                        border: 1px solid var(--border-color); box-shadow: var(--card-shadow);
-                    }
-                    .result-item:hover {
-                        background-color: var(--card-hover-bg); transform: translateY(-3px);
-                        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
-                    }
-                     .result-item .platform-logo {
-                        position: absolute; top: 0.75rem; right: 0.75rem;
-                        font-size: 1.5rem; color: #9ca3af; opacity: 0.6;
-                        transition: opacity 0.3s ease, transform 0.3s ease;
-                     }
-                     .result-item:hover .platform-logo { opacity: 0.9; transform: scale(1.05); }
-                    .result-item a {
-                        color: var(--link-color); text-decoration: none; font-size: 1.05rem;
-                        font-weight: 600; display: block; margin-bottom: 0.25rem;
-                        padding-right: 2.5rem; transition: color 0.2s ease;
-                    }
-                    .result-item a:hover { color: var(--link-hover-color); text-decoration: underline; }
-                    .result-item .description {
-                        color: var(--text-color); font-size: 0.875rem; margin-bottom: 0.6rem;
-                        line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2;
-                        -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;
-                        padding-right: 2.5rem; opacity: 0.85;
-                    }
-                    /* Metadata - Redesigned */
-                    .result-item .meta {
-                        font-size: 0.75rem; color: #6b7280; display: flex; flex-wrap: wrap;
-                        align-items: center; gap: 0.4rem 1rem;
-                        padding-right: 2.5rem; opacity: 0.75;
-                    }
-                     .result-item .meta span { display: inline-flex; align-items: center; gap: 0.25rem; }
-                     .result-item .meta i { color: #9ca3af; width: 1em; text-align: center; font-size: 0.85em; }
-
-                    /* Error Message */
-                    .error-message {
-                        color: #be123c; background-color: rgba(251, 226, 231, 0.7);
-                        border: 1px solid rgba(251, 191, 204, 0.5);
-                        padding: 1rem 1.25rem; border-radius: 0.5rem; margin-top: 1.5rem;
-                        text-align: center; animation: fadeIn 0.5s ease-out;
-                        backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-                        box-shadow: var(--card-shadow);
-                    }
-
-                    /* No Results Message */
-                    #results-message {
-                         text-align: center; color: #6b7280; padding: 2rem; font-size: 1rem;
-                         border-radius: 0.75rem; margin-top: 1.5rem; animation: fadeIn 0.5s ease-out;
-                         background: var(--card-bg-color); backdrop-filter: blur(10px) saturate(180%);
-                         -webkit-backdrop-filter: blur(10px) saturate(180%);
-                         border: 1px solid var(--border-color); box-shadow: var(--card-shadow);
-                    }
-
-                    /* Loading Indicator */
-                    .loading-indicator {
-                        display: flex; align-items: center; justify-content: center;
-                        padding: 1.25rem 1.75rem; color: var(--text-color); font-size: 1rem; font-weight: 500;
-                        text-align: center; position: fixed; top: 50%; left: 50%;
-                        transform: translate(-50%, -50%); border-radius: 0.75rem; z-index: 50;
-                        opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s 0.3s linear;
-                        background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px) saturate(150%);
-                        -webkit-backdrop-filter: blur(8px) saturate(150%);
-                        border: 1px solid rgba(229, 231, 235, 0.5); box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-                    }
-                    .loading-indicator.visible {
-                        opacity: 1; visibility: visible; transition: opacity 0.3s ease, visibility 0s linear;
-                    }
-                    .spinner {
-                        border: 4px solid rgba(156, 163, 175, 0.2); border-top: 4px solid var(--button-bg);
-                        border-radius: 50%; width: 28px; height: 28px;
-                        animation: spin 0.8s linear infinite; margin-right: 1rem;
-                    }
-
-                    /* Utility */
-                    .hidden { display: none !important; }
-
-                </style>
-            </head>
-            <body>
-                <div id="search-container" class="initial-state">
-                    <div id="search-form-wrapper">
-                        <h1 class="initial-state-title">
-                             <span class="text-blue-600">I</span><span class="text-red-500">n</span><span class="text-yellow-500">f</span><span class="text-blue-600">r</span><span class="text-green-500">a</span><span class="text-red-500">S</span>earch
-                         </h1>
-                         <h2 id="results-page-title">
-                             <span class="text-blue-600">I</span><span class="text-red-500">n</span><span class="text-yellow-500">f</span><span class="text-blue-600">r</span><span class="text-green-500">a</span><span class="text-red-500">S</span>earch
-                         </h2>
-                         <form id="search-form" role="search">
-                            <input type="search" id="search-input" name="query" required placeholder="Search across platforms...">
-                            <button type="submit" id="search-button" title="Search" aria-label="Search">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                        </div>
-                     </div>
-
-                <div id="loading" class="loading-indicator" aria-live="polite" aria-busy="true">
-                    <div class="spinner"></div>
-                    <span>Searching...</span>
+    <div id="main-container" class="min-h-screen">
+        <!-- Search Container -->
+        <div id="search-container" class="search-container flex items-center justify-center search-bar-center">
+            <div class="w-full max-w-2xl px-4">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white">
+                        <i class="fas fa-brain text-blue-500"></i> InfraSearch
+                    </h1>
                 </div>
-
-                <div id="error-message" class="error-message hidden max-w-2xl mx-auto" role="alert"></div>
-
-                <div id="results-area" class="hidden">
-                     <ul id="combined-results-list" class="results-list">
-                         </ul>
-                     <div id="results-message" class="hidden"></div>
+                <div class="relative bg-white dark:bg-gray-800 rounded-full shadow-lg">
+                    <input type="text" id="search-input" placeholder="Search for models, repositories, or keywords..." class="w-full h-16 pl-6 pr-20 rounded-full text-lg bg-transparent focus:outline-none text-gray-700 dark:text-gray-300">
+                    <button id="search-button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
+                        <i class="fas fa-search text-xl"></i>
+                    </button>
                 </div>
+            </div>
+        </div>
 
-                <script>
-                    // --- DOM Elements ---
-                    const searchContainer = document.getElementById('search-container');
-                    const searchFormWrapper = document.getElementById('search-form-wrapper');
-                    const searchForm = document.getElementById('search-form');
-                    const searchInput = document.getElementById('search-input');
-                    const loadingIndicator = document.getElementById('loading');
-                    const errorMessageDiv = document.getElementById('error-message');
-                    const resultsArea = document.getElementById('results-area');
-                    const initialStateTitle = document.querySelector('.initial-state-title');
-                    const resultsPageTitle = document.getElementById('results-page-title');
-                    const combinedResultsList = document.getElementById('combined-results-list');
-                    const resultsMessage = document.getElementById('results-message');
-                    // Filter Elements Removed
-                    // const filterToggleButton = ...
-                    // const filterPanel = ...
-                    // const filterOptionButtons = ...
+        <!-- Results Container -->
+        <div id="results-section" class="hidden container mx-auto p-4 md:p-6">
+            <!-- Filter Controls -->
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Search Results</h2>
+                <div>
+                    <label for="sort-filter" class="mr-2 text-gray-600 dark:text-gray-400">Sort by:</label>
+                    <select id="sort-filter" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="best_match">Best Match</option>
+                        <option value="newest">Newest</option>
+                        <option value="oldest">Oldest</option>
+                        <option value="stars">Most Popular</option>
+                    </select>
+                </div>
+            </div>
 
-                    // --- Constants ---
-                    const GITHUB_API_URL = 'https://api.github.com/search/repositories';
-                    const GITLAB_API_URL = 'https://gitlab.com/api/v4/projects';
-                    const BITBUCKET_API_BASE_URL = 'https://api.bitbucket.org/2.0/repositories';
-                    const HUGGINGFACE_API_URL = 'https://huggingface.co/api/models';
-                    const RESULTS_PER_PAGE = 10;
+            <!-- Loading Spinner -->
+            <div id="loader" class="text-center py-10 hidden">
+                 <div class="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32 mx-auto"></div>
+                 <p class="mt-4 text-lg">Searching the digital universe...</p>
+            </div>
 
-                    // --- State ---
-                    // Default sort is relevance now, no UI to change it
-                    let currentSort = 'relevant';
-                    // Duration filter removed
-                    // let currentDuration = 'all';
-                    let currentQuery = '';
-                    let isInitialState = true;
-                    // Filter panel state removed
-                    // let isFilterPanelVisible = false;
-
-                    // --- Event Listeners ---
-                    searchForm.addEventListener('submit', (event) => {
-                         event.preventDefault();
-                         const query = searchInput.value.trim();
-                         if (query && (query !== currentQuery || isInitialState)) {
-                             currentQuery = query;
-                             performSearch();
-                             // No filter panel to hide
-                         } else if (!query) {
-                             clearResultsAndErrors();
-                             // resetToInitialState(); // Optional
-                         }
-                    });
-
-                    // Filter Listeners Removed
-                    // filterToggleButton?.addEventListener(...)
-                    // filterOptionButtons.forEach(...)
-
-                    // --- Functions ---
-
-                    // Filter Functions Removed
-                    // hideFilterPanel()
-                    // updateFilterOptionActiveState()
-                    // initializeFilterUI()
-                    // getDateFilter()
-                    // getDurationText()
-
-
-                    /**
-                     * Main search function: Handles UI state, API calls, sorting, and rendering.
-                     */
-                    async function performSearch() {
-                        if (!currentQuery) {
-                            showError("Please enter a search query.");
-                            return;
-                        }
-
-                        clearResultsAndErrors();
-                        showLoading(true);
-                        loadingIndicator.setAttribute('aria-busy', 'true');
-
-                        // --- UI Transition ---
-                        if (isInitialState) {
-                            initialStateTitle?.classList.add('fade-out');
-                            setTimeout(() => {
-                                searchContainer.classList.remove('initial-state');
-                                searchContainer.classList.add('searched-state');
-                            }, 150);
-                            isInitialState = false;
-                        } else {
-                             searchContainer.classList.add('searched-state');
-                        }
-                        resultsArea.classList.remove('hidden');
-
-
-                        // --- API URL Construction (Simplified) ---
-                        const encodedQuery = encodeURIComponent(currentQuery);
-                        // Always use default relevance sort from APIs
-                        let githubUrl = `${GITHUB_API_URL}?q=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
-                        let gitlabUrl = `${GITLAB_API_URL}?search=${encodedQuery}&per_page=${RESULTS_PER_PAGE}`;
-                        let bitbucketBaseQuery = `(name~"${encodedQuery}" OR description~"${encodedQuery}")`;
-                        let bitbucketUrl = `${BITBUCKET_API_BASE_URL}?q=${encodeURIComponent(bitbucketBaseQuery)}&pagelen=${RESULTS_PER_PAGE}`;
-                        let huggingfaceUrl = `${HUGGINGFACE_API_URL}?search=${encodedQuery}&limit=${RESULTS_PER_PAGE}&full=true`;
-
-                        // --- Fetching and Processing ---
-                        let allPlatformResults = { github: [], gitlab: [], bitbucket: [], huggingface: [] };
-                        let fetchErrors = 0;
-
-                        try {
-                            const responses = await Promise.allSettled([
-                                fetch(githubUrl, { headers: { 'Accept': 'application/vnd.github.v3+json' } }),
-                                fetch(gitlabUrl),
-                                fetch(bitbucketUrl),
-                                fetch(huggingfaceUrl)
-                            ]);
-
-                            // Process results and store them by platform
-                            if (responses[0].status === 'fulfilled' && responses[0].value.ok) {
-                                const data = await responses[0].value.json();
-                                allPlatformResults.github = transformGitHubResults(data.items || []);
-                            } else { fetchErrors++; logFetchError(responses[0], 'GitHub'); }
-
-                            if (responses[1].status === 'fulfilled' && responses[1].value.ok) {
-                                const data = await responses[1].value.json();
-                                allPlatformResults.gitlab = transformGitLabResults(data || []);
-                            } else { fetchErrors++; logFetchError(responses[1], 'GitLab'); }
-
-                            if (responses[2].status === 'fulfilled' && responses[2].value.ok) {
-                                const data = await responses[2].value.json();
-                                allPlatformResults.bitbucket = transformBitbucketResults(data.values || []);
-                            } else { fetchErrors++; logFetchError(responses[2], 'Bitbucket'); }
-
-                            if (responses[3].status === 'fulfilled' && responses[3].value.ok) {
-                                const data = await responses[3].value.json();
-                                allPlatformResults.huggingface = transformHuggingFaceResults(data || []);
-                            } else { fetchErrors++; logFetchError(responses[3], 'Hugging Face'); }
-
-                            // --- Combine, Interleave (default), and Display ---
-                            let finalResults = [];
-                            const combined = [
-                                ...allPlatformResults.github,
-                                ...allPlatformResults.gitlab,
-                                ...allPlatformResults.bitbucket,
-                                ...allPlatformResults.huggingface
-                            ];
-
-                            // No client-side date filtering needed
-
-                            if (combined.length > 0) {
-                                // Always interleave results now as there's no other sort option
-                                finalResults = interleaveResults(allPlatformResults);
-                                displayCombinedResults(finalResults);
-                                resultsArea.classList.remove('hidden');
-                            } else {
-                                resultsArea.classList.remove('hidden');
-                                if (fetchErrors === responses.length && combined.length === 0) {
-                                    showError("Failed to fetch results from any platform. Check connection or API status.");
-                                } else {
-                                    // Simplified message
-                                    showResultsMessage(`No results found for "${escapeHtml(currentQuery)}".`);
-                                }
-                            }
-
-                        } catch (error) {
-                            console.error("General Search Error:", error);
-                            showError("An unexpected error occurred during the search.");
-                            resultsArea.classList.add('hidden');
-                        } finally {
-                            showLoading(false);
-                            loadingIndicator.setAttribute('aria-busy', 'false');
-                        }
-                    }
-
-                    /** Logs fetch errors. */
-                    function logFetchError(result, platformName) {
-                        let reason = 'Unknown error';
-                        let status = 'N/A';
-                        if (result.status === 'rejected') {
-                            reason = result.reason?.message || 'Fetch rejected';
-                        } else if (result.status === 'fulfilled') {
-                             status = result.value.status;
-                             if (!result.value.ok) {
-                                reason = `HTTP Error: ${status} ${result.value.statusText}`;
-                             } else {
-                                 reason = 'Unexpected state in logFetchError';
-                             }
-                        }
-                        console.error(`${platformName} Fetch Error (Status: ${status}): ${reason}`, result);
-                    }
-
-                    // --- Data Transformation Functions (Simplified - sort keys not strictly needed now) ---
-                    // Kept sort keys in case sorting is added back later
-                     function transformGitHubResults(items) {
-                        return items.map(item => ({
-                            platform: 'github',
-                            title: item.full_name,
-                            url: item.html_url,
-                            description: item.description || '',
-                            sort_likes: item.stargazers_count ?? 0,
-                            sort_updated: item.updated_at ? new Date(item.updated_at) : new Date(0),
-                            sort_downloads: 0,
-                            meta: [
-                                { icon: 'fas fa-star', value: item.stargazers_count?.toLocaleString() ?? '0', label: 'Stars' },
-                                item.language ? { icon: 'fas fa-code', value: item.language, label: 'Language' } : null,
-                                { icon: 'fas fa-user', value: item.owner?.login ?? '?', label: 'Owner' },
-                                item.updated_at ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(item.updated_at)}`, label: 'Updated' } : null
-                            ].filter(Boolean)
-                        }));
-                    }
-                    function transformGitLabResults(projects) {
-                         if (!Array.isArray(projects)) { console.warn("GitLab API non-array:", projects); return []; }
-                        return projects.map(project => ({
-                            platform: 'gitlab',
-                            title: project.name_with_namespace,
-                            url: project.web_url,
-                            description: project.description || '',
-                            sort_likes: project.star_count ?? 0,
-                            sort_updated: project.last_activity_at ? new Date(project.last_activity_at) : new Date(0),
-                            sort_downloads: 0,
-                            meta: [
-                                { icon: 'fas fa-star', value: project.star_count?.toLocaleString() ?? '0', label: 'Stars' },
-                                { icon: 'fas fa-code-fork', value: project.forks_count?.toLocaleString() ?? '0', label: 'Forks' },
-                                { icon: 'fas fa-user', value: project.namespace?.name ?? '?', label: 'Namespace' },
-                                 project.last_activity_at ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(project.last_activity_at)}`, label: 'Updated' } : null
-                            ].filter(Boolean)
-                        }));
-                    }
-                    function transformBitbucketResults(repos) {
-                         if (!Array.isArray(repos)) { console.warn("Bitbucket API non-array:", repos); return []; }
-                        return repos.map(repo => ({
-                            platform: 'bitbucket',
-                            title: repo.full_name,
-                            url: repo.links?.html?.href || '#',
-                            description: repo.description || '',
-                            sort_likes: 0,
-                            sort_updated: repo.updated_on ? new Date(repo.updated_on) : new Date(0),
-                            sort_downloads: 0,
-                            meta: [
-                                repo.language ? { icon: 'fas fa-code', value: repo.language, label: 'Language' } : null,
-                                { icon: 'fas fa-user', value: repo.owner?.display_name || repo.workspace?.name || '?', label: 'Owner/Workspace' },
-                                repo.updated_on ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(repo.updated_on)}`, label: 'Updated' } : null
-                            ].filter(Boolean)
-                        }));
-                    }
-                    function transformHuggingFaceResults(models) {
-                         if (!Array.isArray(models)) { console.warn("Hugging Face API non-array:", models); return []; }
-                        return models.map(model => ({
-                            platform: 'huggingface',
-                            title: model.modelId,
-                            url: `https://huggingface.co/${model.modelId}`,
-                            description: model.cardData?.description || model.description || '',
-                            sort_likes: model.likes ?? 0,
-                            sort_updated: model.lastModified ? new Date(model.lastModified) : new Date(0),
-                            sort_downloads: model.downloads ?? 0,
-                            meta: [
-                                { icon: 'fas fa-heart', value: model.likes?.toLocaleString() ?? '0', label: 'Likes' },
-                                (typeof model.downloads !== 'undefined') ? { icon: 'fas fa-download', value: model.downloads.toLocaleString(), label: 'Downloads' } : null,
-                                model.pipeline_tag ? { icon: 'fas fa-tags', value: model.pipeline_tag, label: 'Task' } : null,
-                                { icon: 'fas fa-user', value: model.author || model.modelId.split('/')[0], label: 'Author' },
-                                model.lastModified ? { icon: 'fas fa-clock', value: `Updated: ${formatDate(model.lastModified)}`, label: 'Updated' } : null
-                            ].filter(Boolean)
-                        }));
-                    }
-
-
-                    /** Interleaves results from different platforms. */
-                    function interleaveResults(platformResults) {
-                        const interleaved = [];
-                        const sources = Object.values(platformResults).map(arr => [...arr]);
-                        let maxLen = 0;
-                        sources.forEach(arr => { maxLen = Math.max(maxLen, arr.length); });
-
-                        for (let i = 0; i < maxLen; i++) {
-                            sources.forEach(arr => {
-                                if (i < arr.length) {
-                                    interleaved.push(arr[i]);
-                                }
-                            });
-                        }
-                        return interleaved;
-                    }
-
-                    // sortCombinedResults function removed as it's no longer needed
-
-                    /** Renders the final results list to the DOM. */
-                    function displayCombinedResults(results) {
-                        combinedResultsList.innerHTML = '';
-                        if (!results || results.length === 0) return;
-
-                        resultsArea.classList.remove('hidden');
-
-                        results.forEach((result, index) => {
-                            const listItem = document.createElement('li');
-                            listItem.className = 'result-item';
-                            listItem.style.animationDelay = `${index * 0.07 + 0.1}s`;
-
-                            let platformLogoClass = '';
-                            switch (result.platform) {
-                                case 'github': platformLogoClass = 'fab fa-github'; break;
-                                case 'gitlab': platformLogoClass = 'fab fa-gitlab'; break;
-                                case 'bitbucket': platformLogoClass = 'fab fa-bitbucket'; break;
-                                case 'huggingface': platformLogoClass = 'fas fa-robot'; break;
-                            }
-
-                            const metaHtml = result.meta.map(m => `
-                                <span title="${escapeHtml(m.label || '')}">
-                                    <i class="${m.icon}" aria-hidden="true"></i> ${escapeHtml(m.value)}
-                                </span>
-                            `).join('');
-
-                            listItem.innerHTML = `
-                                ${platformLogoClass ? `<i class="platform-logo ${platformLogoClass}" title="${result.platform}" aria-label="${result.platform} result"></i>` : ''}
-                                <a href="${escapeHtml(result.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(result.title)}</a>
-                                <p class="description">${result.description ? escapeHtml(result.description) : 'No description available.'}</p>
-                                <div class="meta">
-                                    ${metaHtml}
-                                </div>
-                            `;
-                            combinedResultsList.appendChild(listItem);
-                        });
-                    }
-
-                    /** Shows/hides loading indicator. */
-                    function showLoading(isLoading) {
-                        loadingIndicator.classList.toggle('visible', isLoading);
-                    }
-
-                    /** Displays error message. */
-                    function showError(message) {
-                        errorMessageDiv.textContent = message;
-                        errorMessageDiv.classList.remove('hidden');
-                        combinedResultsList.innerHTML = '';
-                        resultsMessage.classList.add('hidden');
-                        resultsArea.classList.remove('hidden');
-                    }
-
-                    /** Displays 'no results' message. */
-                    function showResultsMessage(message) {
-                        resultsMessage.textContent = message;
-                        resultsMessage.classList.remove('hidden');
-                        combinedResultsList.innerHTML = '';
-                        resultsArea.classList.remove('hidden');
-                    }
-
-                    /** Clears results and error/status messages. */
-                    function clearResultsAndErrors() {
-                        errorMessageDiv.classList.add('hidden');
-                        errorMessageDiv.textContent = '';
-                        combinedResultsList.innerHTML = '';
-                        resultsMessage.classList.add('hidden');
-                        resultsMessage.textContent = '';
-                    }
-
-                    // updateFilterButtonsUI function removed
-
-                    /** Escapes HTML characters. */
-                    function escapeHtml(str) {
-                        str = String(str || '');
-                        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-                        return str.replace(/[&<>"']/g, m => map[m]);
-                    }
-
-                    /** Formats date string. */
-                    function formatDate(dateString) {
-                        if (!dateString) return '';
-                        try {
-                            return new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-                        } catch (e) { return dateString; }
-                    }
-
-                    // --- Initial Setup ---
-                    // initializeFilterUI call removed
-                    showLoading(false);
-                    loadingIndicator.setAttribute('aria-busy', 'false');
-
-                </script>
-
-            </body>
-            </html>
+            <!-- Error Message -->
+            <div id="error-message" class="text-center py-10 hidden">
+                <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold">Oops! Something went wrong.</h3>
+                <p id="error-text" class="text-gray-500 dark:text-gray-400 mt-2"></p>
+            </div>
             
+            <!-- Results Grid -->
+            <div id="results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Result cards will be injected here -->
+            </div>
+             <div id="no-results" class="text-center py-10 hidden">
+                <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                <h3 class="text-2xl font-semibold">No Results Found</h3>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Try a different search query.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            const sortFilter = document.getElementById('sort-filter');
+            const searchContainer = document.getElementById('search-container');
+            const resultsSection = document.getElementById('results-section');
+            const resultsGrid = document.getElementById('results-grid');
+            const loader = document.getElementById('loader');
+            const noResults = document.getElementById('no-results');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+
+            let allResults = [];
+
+            // --- EVENT LISTENERS ---
+            searchButton.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            sortFilter.addEventListener('change', () => {
+                renderResults(sortResults(allResults));
+            });
+
+            // --- API FETCHING ---
+            async function performSearch() {
+                const query = searchInput.value.trim();
+                if (!query) return;
+
+                // Transition UI
+                searchContainer.classList.remove('search-bar-center');
+                searchContainer.classList.add('search-bar-top');
+                resultsSection.classList.remove('hidden');
+                resultsGrid.innerHTML = '';
+                loader.classList.remove('hidden');
+                noResults.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+
+                try {
+                    const [githubResults, gitlabResults, huggingfaceResults] = await Promise.all([
+                        fetchGitHub(query),
+                        fetchGitLab(query),
+                        fetchHuggingFace(query)
+                    ]);
+                    
+                    allResults = [...githubResults, ...gitlabResults, ...huggingfaceResults];
+                    
+                    if(allResults.length === 0) {
+                        noResults.classList.remove('hidden');
+                    } else {
+                        renderResults(sortResults(allResults));
+                    }
+
+                } catch (error) {
+                    console.error("Search failed:", error);
+                    errorText.textContent = error.message || "Please check your network connection and try again.";
+                    errorMessage.classList.remove('hidden');
+                } finally {
+                    loader.classList.add('hidden');
+                }
+            }
+
+            async function fetchGitHub(query) {
+                const response = await fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error(`GitHub API error: ${response.statusText}`);
+                const data = await response.json();
+                return data.items.map(item => ({
+                    source: 'GitHub',
+                    id: item.id,
+                    title: item.full_name,
+                    description: item.description,
+                    url: item.html_url,
+                    stars: item.stargazers_count,
+                    updated: new Date(item.updated_at),
+                    avatar: item.owner.avatar_url
+                }));
+            }
+
+            async function fetchGitLab(query) {
+                const response = await fetch(`https://gitlab.com/api/v4/projects?search=${encodeURIComponent(query)}&scope=projects`);
+                 if (!response.ok) throw new Error(`GitLab API error: ${response.statusText}`);
+                const data = await response.json();
+                return data.map(item => ({
+                    source: 'GitLab',
+                    id: item.id,
+                    title: item.path_with_namespace,
+                    description: item.description,
+                    url: item.web_url,
+                    stars: item.star_count,
+                    updated: new Date(item.last_activity_at),
+                    avatar: item.avatar_url || 'https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png'
+                }));
+            }
+
+            async function fetchHuggingFace(query) {
+                const response = await fetch(`https://huggingface.co/api/models?search=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error(`Hugging Face API error: ${response.statusText}`);
+                const data = await response.json();
+                return data.map(item => {
+                    // FIX: Handle cases where item.author might be undefined.
+                    const authorChar = item.author ? item.author.charAt(0) : (item.modelId ? item.modelId.charAt(0) : 'M');
+                    return {
+                        source: 'Hugging Face',
+                        id: item.modelId,
+                        title: item.modelId,
+                        description: `Pipeline: ${item.pipeline_tag || 'N/A'}. Downloads: ${item.downloads || 0}.`,
+                        url: `https://huggingface.co/${item.modelId}`,
+                        stars: item.likes || 0,
+                        updated: new Date(item.lastModified),
+                        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(authorChar)}&background=random`
+                    };
+                });
+            }
+
+            // --- SORTING ---
+            function sortResults(results) {
+                const sortValue = sortFilter.value;
+                return [...results].sort((a, b) => {
+                    switch (sortValue) {
+                        case 'newest':
+                            return b.updated - a.updated;
+                        case 'oldest':
+                            return a.updated - b.updated;
+                        case 'stars':
+                            return b.stars - a.stars;
+                        case 'best_match':
+                        default:
+                            return 0; // API default is relevance
+                    }
+                });
+            }
+
+            // --- RENDERING ---
+            function renderResults(results) {
+                resultsGrid.innerHTML = '';
+                results.forEach(result => {
+                    const card = document.createElement('div');
+                    card.className = 'result-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-5 flex flex-col';
+                    
+                    const sourceIcon = {
+                        'GitHub': { icon: 'fab fa-github', color: 'text-gray-800 dark:text-white' },
+                        'GitLab': { icon: 'fab fa-gitlab', color: 'text-orange-500' },
+                        'Hugging Face': { icon: 'fas fa-robot', color: 'text-yellow-400' }
+                    };
+
+                    card.innerHTML = `
+                        <div class="flex-grow">
+                            <div class="flex items-start justify-between mb-3">
+                                <a href="${result.url}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3">
+                                    <img src="${result.avatar}" onerror="this.onerror=null;this.src='https://placehold.co/40x40/e2e8f0/64748b?text=??';" alt="Avatar" class="w-10 h-10 rounded-full">
+                                    <div>
+                                        <h3 class="text-lg font-bold text-blue-600 hover:underline dark:text-blue-400 break-all">${result.title}</h3>
+                                    </div>
+                                </a>
+                                <i class="${sourceIcon[result.source].icon} ${sourceIcon[result.source].color} text-2xl" title="${result.source}"></i>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">${result.description || 'No description available.'}</p>
+                        </div>
+                        <div class="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-3 mt-auto">
+                            <span><i class="fas fa-star text-yellow-500 mr-1"></i> ${result.stars.toLocaleString()}</span>
+                            <span><i class="fas fa-clock mr-1"></i> ${result.updated.toLocaleDateString()}</span>
+                        </div>
+                    `;
+                    resultsGrid.appendChild(card);
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
