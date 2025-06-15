@@ -34,30 +34,82 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .search-type-toggle.active {
+            background-color: #ff4500;
+            color: white;
+            border-color: #ff4500;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .image-card {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .dark .image-card {
+             background-color: #1e293b;
+        }
+        .image-card:hover {
+            transform: scale(1.03);
+        }
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
 
     <!-- Header with smaller search bar (initially hidden) -->
-    <header id="header" class="hidden sticky top-0 z-50 bg-white dark:bg-slate-800 shadow-md p-2">
+    <header id="header" class="hidden sticky top-0 z-40 bg-white dark:bg-slate-800 shadow-md p-2">
         <div class="container mx-auto flex items-center gap-4">
              <a href="#" id="logo-link" class="text-2xl font-bold text-slate-800 dark:text-white flex-shrink-0 flex items-center gap-2">
                 <i class="fab fa-reddit text-orange-500"></i> ReddSearch
             </a>
-            <div class="relative flex-grow max-w-2xl mx-auto">
+            <div class="relative flex-grow max-w-xl mx-auto">
                 <input type="text" id="top-search-input" placeholder="Search Reddit..." class="w-full h-12 pl-4 pr-14 rounded-full text-md bg-slate-100 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 dark:text-slate-300" autocomplete="off">
                 <button id="top-search-button" class="absolute right-1 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-10 h-10 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
                     <i class="fas fa-search"></i>
                 </button>
-                <!-- Suggestions Dropdown for top bar -->
-                <div id="top-suggestions-container" class="hidden absolute w-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg z-10 overflow-hidden">
-                    <ul id="top-suggestions-list">
-                        <!-- Suggestion items will be injected here -->
-                    </ul>
+                <div id="top-suggestions-container" class="hidden absolute w-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg z-20 overflow-hidden">
+                    <ul id="top-suggestions-list"></ul>
                 </div>
             </div>
+            <button id="filter-toggle-button" class="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600">
+                <i class="fas fa-sliders-h"></i>
+                <span>Filters</span>
+            </button>
         </div>
     </header>
+    
+    <!-- Expandable Filters Section -->
+    <div id="expandable-filters" class="hidden sticky top-[64px] z-30 bg-white dark:bg-slate-800 p-4 shadow-lg border-t border-slate-200 dark:border-slate-700">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
+            <div class="flex items-center gap-3">
+                <span class="font-medium text-slate-600 dark:text-slate-300">Search Type:</span>
+                <div class="flex items-center border border-slate-300 dark:border-slate-600 rounded-full p-0.5">
+                    <button id="top-search-type-all" class="search-type-toggle text-sm px-4 py-1 rounded-full">Text</button>
+                    <button id="top-search-type-images" class="search-type-toggle text-sm px-4 py-1 rounded-full">Images</button>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                 <label for="sort-filter" class="font-medium text-slate-600 dark:text-slate-300">Sort by:</label>
+                 <select id="sort-filter" class="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-full px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                     <option value="relevance">Relevance</option>
+                     <option value="new">Newest</option>
+                     <option value="top">Most Popular</option>
+                     <option value="comments">Most Comments</option>
+                 </select>
+            </div>
+        </div>
+    </div>
+
 
     <div id="main-container" class="min-h-screen">
         <!-- Hero Search Container (initially visible) -->
@@ -76,11 +128,14 @@
                             <i class="fas fa-search text-xl"></i>
                         </button>
                     </div>
-                    <!-- Suggestions Dropdown -->
                     <div id="hero-suggestions-container" class="hidden absolute w-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg z-10 overflow-hidden">
-                        <ul id="hero-suggestions-list">
-                            <!-- Suggestion items will be injected here -->
-                        </ul>
+                        <ul id="hero-suggestions-list"></ul>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-4 mt-4">
+                    <div class="flex items-center border border-slate-300 dark:border-slate-600 rounded-full p-1">
+                        <button id="hero-search-type-all" class="search-type-toggle px-5 py-2 rounded-full text-lg">Text</button>
+                        <button id="hero-search-type-images" class="search-type-toggle px-5 py-2 rounded-full text-lg">Images</button>
                     </div>
                 </div>
             </div>
@@ -91,15 +146,6 @@
             <!-- Filter Controls -->
             <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <p id="results-stats" class="text-sm text-slate-600 dark:text-slate-400"></p>
-                <div>
-                    <label for="sort-filter" class="mr-2 text-slate-600 dark:text-slate-400">Sort by:</label>
-                    <select id="sort-filter" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
-                        <option value="relevance">Relevance</option>
-                        <option value="new">Newest</option>
-                        <option value="top">Most Popular</option>
-                        <option value="comments">Most Comments</option>
-                    </select>
-                </div>
             </div>
 
             <!-- Loading Spinner -->
@@ -115,10 +161,10 @@
                 <p id="error-text" class="text-slate-500 dark:text-slate-400 mt-2"></p>
             </div>
             
-            <!-- Results List -->
-            <div id="results-list" class="flex flex-col">
-                <!-- Result items will be injected here -->
-            </div>
+            <!-- Results Containers -->
+            <div id="results-list" class="flex flex-col"></div>
+            <div id="image-results-grid" class="image-grid"></div>
+
              <div id="no-results" class="text-center py-10 hidden">
                 <i class="fas fa-search text-slate-400 text-4xl mb-4"></i>
                 <h3 class="text-2xl font-semibold">No Results Found</h3>
@@ -134,6 +180,7 @@
             const heroSearchContainer = document.getElementById('hero-search-container');
             const resultsSection = document.getElementById('results-section');
             const resultsList = document.getElementById('results-list');
+            const imageResultsGrid = document.getElementById('image-results-grid');
             const resultsStats = document.getElementById('results-stats');
             const loader = document.getElementById('loader');
             const noResults = document.getElementById('no-results');
@@ -147,6 +194,10 @@
             const heroSearchButton = document.getElementById('hero-search-button');
             const topSearchInput = document.getElementById('top-search-input');
             const topSearchButton = document.getElementById('top-search-button');
+            
+            // Filter Elements
+            const filterToggleButton = document.getElementById('filter-toggle-button');
+            const expandableFilters = document.getElementById('expandable-filters');
 
             // Suggestions Elements
             const heroSuggestionsContainer = document.getElementById('hero-suggestions-container');
@@ -154,7 +205,14 @@
             const topSuggestionsContainer = document.getElementById('top-suggestions-container');
             const topSuggestionsList = document.getElementById('top-suggestions-list');
             
+            // Search Type Toggles
+            const heroSearchTypeAll = document.getElementById('hero-search-type-all');
+            const heroSearchTypeImages = document.getElementById('hero-search-type-images');
+            const topSearchTypeAll = document.getElementById('top-search-type-all');
+            const topSearchTypeImages = document.getElementById('top-search-type-images');
+
             let currentQuery = '';
+            let searchType = 'all';
 
             // --- UTILITY FUNCTIONS ---
             const debounce = (func, delay) => {
@@ -181,6 +239,35 @@
                 e.preventDefault();
                 window.location.reload();
             });
+            filterToggleButton.addEventListener('click', () => {
+                expandableFilters.classList.toggle('hidden');
+            });
+
+             // --- SEARCH TYPE TOGGLE LOGIC ---
+            function updateSearchTypeToggles() {
+                const isImages = searchType === 'images';
+                // Hero toggles
+                heroSearchTypeAll.classList.toggle('active', !isImages);
+                heroSearchTypeImages.classList.toggle('active', isImages);
+                 // Top bar toggles
+                topSearchTypeAll.classList.toggle('active', !isImages);
+                topSearchTypeImages.classList.toggle('active', isImages);
+
+                const commentsOption = sortFilter.querySelector('option[value="comments"]');
+                if (commentsOption) commentsOption.disabled = isImages;
+            }
+
+            function setSearchType(type) {
+                searchType = type;
+                updateSearchTypeToggles();
+                if (currentQuery) {
+                    performSearch(currentQuery);
+                }
+            }
+            
+            // Listen to all four buttons
+            [heroSearchTypeAll, topSearchTypeAll].forEach(btn => btn.addEventListener('click', () => setSearchType('all')));
+            [heroSearchTypeImages, topSearchTypeImages].forEach(btn => btn.addEventListener('click', () => setSearchType('images')));
 
             // --- SUGGESTIONS LOGIC ---
             const onHeroInputChange = async (event) => onInputChange(event.target.value, heroSearchInput, heroSuggestionsContainer, heroSuggestionsList);
@@ -189,12 +276,9 @@
             heroSearchInput.addEventListener('input', debounce(onHeroInputChange, 300));
             topSearchInput.addEventListener('input', debounce(onTopInputChange, 300));
 
-            // Hide suggestions when clicking outside
             document.addEventListener('click', (e) => {
-                if (!heroSearchContainer.contains(e.target)) {
-                    heroSuggestionsContainer.classList.add('hidden');
-                }
-                if (!header.contains(e.target)) {
+                if (!heroSearchContainer.contains(e.target)) heroSuggestionsContainer.classList.add('hidden');
+                 if (header && !header.contains(e.target) && !expandableFilters.contains(e.target)) {
                     topSuggestionsContainer.classList.add('hidden');
                 }
             });
@@ -230,13 +314,7 @@
                 suggestions.forEach(sub => {
                     const li = document.createElement('li');
                     li.className = 'px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center justify-between';
-                    li.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <img src="${sub.icon_img || 'https://www.redditstatic.com/desktop2x/img/id-cards/snoo-home@2x.png'}" class="w-6 h-6 rounded-full" alt="">
-                            <span class="font-medium">${sub.display_name_prefixed}</span>
-                        </div>
-                        <span class="text-sm text-slate-500">${(sub.subscribers || 0).toLocaleString()} members</span>
-                    `;
+                    li.innerHTML = `<div class="flex items-center gap-3"><img src="${sub.icon_img || 'https://www.redditstatic.com/desktop2x/img/id-cards/snoo-home@2x.png'}" class="w-6 h-6 rounded-full" alt=""><span class="font-medium">${sub.display_name_prefixed}</span></div><span class="text-sm text-slate-500">${(sub.subscribers || 0).toLocaleString()} members</span>`;
                     li.addEventListener('click', () => {
                         const searchQuery = `subreddit:${sub.display_name}`;
                         inputElement.value = searchQuery;
@@ -247,7 +325,6 @@
                 });
                 container.classList.remove('hidden');
             }
-
 
             // --- Main Search Handler ---
             function handleSearch(query) {
@@ -260,27 +337,22 @@
             }
             
             function buildAdvancedQuery(query) {
-                const trimmedQuery = query.trim();
-                // If it looks like a subreddit filter, leave it
-                if (trimmedQuery.toLowerCase().startsWith('subreddit:')) {
-                    return trimmedQuery;
-                }
-                if (trimmedQuery.startsWith('"') && trimmedQuery.endsWith('"')) {
-                    return trimmedQuery;
-                }
-                if (trimmedQuery.includes(' ')) {
-                    return `"${trimmedQuery}"`;
-                }
-                return trimmedQuery;
+                let finalQuery = query.trim();
+                if (finalQuery.toLowerCase().startsWith('subreddit:')) return finalQuery;
+                if (finalQuery.startsWith('"') && finalQuery.endsWith('"')) return finalQuery;
+                if (finalQuery.includes(' ')) return `"${finalQuery}"`;
+                return finalQuery;
             }
 
             // --- API FETCHING ---
             async function performSearch(query) {
+                updateSearchTypeToggles();
                 heroSearchContainer.classList.add('hidden');
                 header.classList.remove('hidden');
                 topSearchInput.value = query;
                 resultsSection.classList.remove('hidden');
                 resultsList.innerHTML = '';
+                imageResultsGrid.innerHTML = '';
                 loader.classList.remove('hidden');
                 noResults.classList.add('hidden');
                 errorMessage.classList.add('hidden');
@@ -290,19 +362,22 @@
                 const advancedQuery = buildAdvancedQuery(query);
                 
                 try {
-                    const results = await fetchReddit(advancedQuery, sort);
+                    let results = await fetchReddit(advancedQuery, sort);
+                    let finalResults = results;
+
+                    if (searchType === 'images') {
+                        finalResults = results.filter(p => p.post_hint === 'image' || (p.image_url && p.image_url.match(/\.(jpeg|jpg|gif|png)$/)));
+                    }
                     
                     const endTime = performance.now();
                     const searchTime = ((endTime - startTime) / 1000).toFixed(2);
-                    resultsStats.textContent = `${results.length.toLocaleString()} results found in ${searchTime} seconds.`;
+                    resultsStats.textContent = `${finalResults.length.toLocaleString()} results found in ${searchTime} seconds.`;
                     
-                    if (results.length === 0) {
+                    if (finalResults.length === 0) {
                         noResults.classList.remove('hidden');
                     } else {
-                        if (sort === 'oldest') {
-                            results.sort((a, b) => a.timestamp - b.timestamp);
-                        }
-                        renderResults(results);
+                        if (sort === 'oldest') finalResults.sort((a, b) => a.timestamp - b.timestamp);
+                        renderResults(finalResults);
                     }
 
                 } catch (error) {
@@ -316,15 +391,11 @@
 
             async function fetchReddit(query, sort) {
                 const effectiveSort = sort === 'oldest' ? 'new' : sort;
-                const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=25&sort=${effectiveSort}`;
-                
+                const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=100&sort=${effectiveSort}`;
                 const response = await fetch(API_URL, { headers: { 'User-agent': 'ReddSearch 1.0' } });
                 if (!response.ok) throw new Error(`Reddit API Error: ${response.status} ${response.statusText}`);
                 const data = await response.json();
-                
-                if (!data.data || !data.data.children) {
-                    return [];
-                }
+                if (!data.data || !data.data.children) return [];
 
                 return data.data.children.map(({ data: item }) => ({
                     title: item.title,
@@ -335,41 +406,51 @@
                     comments: item.num_comments,
                     subreddit: item.subreddit_name_prefixed,
                     author: item.author,
+                    image_url: item.url_overridden_by_dest,
+                    post_hint: item.post_hint
                 }));
             }
 
             // --- RENDERING ---
             function renderResults(results) {
                 resultsList.innerHTML = '';
+                imageResultsGrid.innerHTML = '';
+
+                if (searchType === 'images') {
+                    resultsList.style.display = 'none';
+                    imageResultsGrid.style.display = 'grid';
+                    renderImageResults(results);
+                } else {
+                    resultsList.style.display = 'flex';
+                    imageResultsGrid.style.display = 'none';
+                    renderListResults(results);
+                }
+            }
+
+            function renderListResults(results) {
                 results.forEach(result => {
                     const item = document.createElement('div');
                     item.className = 'result-item';
-                    
                     const descriptionHtml = (result.description || '').substring(0, 280) + (result.description.length > 280 ? '...' : '');
-
-                    item.innerHTML = `
-                        <div>
-                             <div class="flex items-center gap-2 text-sm mb-1 text-slate-500">
-                                <span>${result.subreddit}</span>
-                                <span class="mx-1">•</span>
-                                <span>Posted by u/${result.author}</span>
-                             </div>
-                            <a href="${result.url}" target="_blank" rel="noopener noreferrer" class="block">
-                                <h3 class="text-xl font-medium text-blue-600 hover:underline dark:text-blue-400">${result.title}</h3>
-                            </a>
-                            <div class="text-slate-600 dark:text-slate-400 text-sm mt-1 snippet-container">
-                                ${descriptionHtml}
-                            </div>
-                            <div class="text-sm text-slate-500 mt-3 flex items-center gap-x-6">
-                                <span title="Score"><i class="fas fa-arrow-up fa-fw"></i> ${result.score.toLocaleString()}</span>
-                                <span title="Comments"><i class="fas fa-comment fa-fw"></i> ${result.comments.toLocaleString()}</span>
-                                <span title="Date"><i class="fas fa-clock fa-fw"></i> ${result.timestamp.toLocaleDateString()}</span>
-                            </div>
-                        </div>
-                    `;
+                    item.innerHTML = `<div><div class="flex items-center gap-2 text-sm mb-1 text-slate-500"><span>${result.subreddit}</span><span class="mx-1">•</span><span>Posted by u/${result.author}</span></div><a href="${result.url}" target="_blank" rel="noopener noreferrer" class="block"><h3 class="text-xl font-medium text-blue-600 hover:underline dark:text-blue-400">${result.title}</h3></a><div class="text-slate-600 dark:text-slate-400 text-sm mt-1 snippet-container">${descriptionHtml}</div><div class="text-sm text-slate-500 mt-3 flex items-center gap-x-6"><span title="Score"><i class="fas fa-arrow-up fa-fw"></i> ${result.score.toLocaleString()}</span><span title="Comments"><i class="fas fa-comment fa-fw"></i> ${result.comments.toLocaleString()}</span><span title="Date"><i class="fas fa-clock fa-fw"></i> ${result.timestamp.toLocaleDateString()}</span></div></div>`;
                     resultsList.appendChild(item);
                 });
             }
+
+            function renderImageResults(results) {
+                results.forEach(result => {
+                    const card = document.createElement('a');
+                    card.href = result.url;
+                    card.target = '_blank';
+                    card.rel = 'noopener noreferrer';
+                    card.className = 'image-card';
+                    card.innerHTML = `<img src="${result.image_url}" alt="${result.title}" onerror="this.style.display='none'"><div class="p-2"><p class="text-xs truncate font-medium text-slate-700 dark:text-slate-300">${result.title}</p><p class="text-xs text-slate-500">${result.subreddit}</p></div>`;
+                    imageResultsGrid.appendChild(card);
+                });
+            }
+            
+            // Set initial state
+            updateSearchTypeToggles();
         });
     </script>
 
