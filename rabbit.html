@@ -299,7 +299,7 @@
             };
 
             async function fetchSuggestions(query) {
-                const API_URL = `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(query)}&include_profiles=false&limit=5`;
+                const API_URL = `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(query)}&include_profiles=false&limit=5&raw_json=1`;
                 const response = await fetch(API_URL, { headers: { 'User-agent': 'RabbitSearch 1.0' } });
                 if (!response.ok) return [];
                 const data = await response.json();
@@ -374,7 +374,7 @@
 
                 } catch (error) {
                     console.error("Search failed:", error);
-                    errorText.textContent = error.message || "An unknown error occurred. Please check your network and try again.";
+                    errorText.textContent = "Could not connect to Reddit. This can happen due to network issues or browser security settings. Please try again in a moment.";
                     errorMessage.classList.remove('hidden');
                 } finally {
                     loader.classList.add('hidden');
@@ -383,13 +383,12 @@
 
             async function fetchReddit(query, sort) {
                 const effectiveSort = sort === 'oldest' ? 'new' : sort;
-                const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=100&sort=${effectiveSort}`;
+                const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=100&sort=${effectiveSort}&raw_json=1`;
                 const response = await fetch(API_URL, { headers: { 'User-agent': 'RabbitSearch 1.0' } });
                 if (!response.ok) throw new Error(`Reddit API Error: ${response.status} ${response.statusText}`);
                 const data = await response.json();
                 if (!data.data || !data.data.children) return [];
 
-                // FIX: Added default values to prevent crash on inconsistent data
                 return data.data.children.map(({ data: item }) => ({
                     title: item.title || 'Untitled Post',
                     url: item.permalink ? `https://www.reddit.com${item.permalink}` : '#',
