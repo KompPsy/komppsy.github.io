@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReddSearch</title>
+    <title>Rabbit</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -74,7 +74,7 @@
     <header id="header" class="hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 shadow-md p-2 frosted-glass">
         <div class="container mx-auto flex items-center gap-4">
              <a href="#" id="logo-link" class="text-2xl font-bold text-slate-800 dark:text-white flex-shrink-0 flex items-center gap-2">
-                <i class="fab fa-reddit text-orange-500"></i> ReddSearch
+                <i class="fas fa-paw text-orange-500"></i> Rabbit
             </a>
             <div class="relative flex-grow max-w-xl mx-auto">
                 <input type="text" id="top-search-input" placeholder="Search Reddit..." class="w-full h-12 pl-4 pr-14 rounded-full text-md bg-slate-100 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 dark:text-slate-300" autocomplete="off">
@@ -120,7 +120,7 @@
              <div class="w-full max-w-2xl px-4">
                 <div class="text-center mb-8">
                     <h1 class="text-4xl md:text-5xl font-bold text-slate-800 dark:text-white flex items-center justify-center gap-3">
-                        <i class="fab fa-reddit text-orange-500"></i> ReddSearch
+                        <i class="fas fa-paw text-orange-500"></i> Rabbit
                     </h1>
                 </div>
                 <div class="relative">
@@ -152,7 +152,7 @@
 
             <!-- Loading Spinner -->
             <div id="loader" class="text-center py-10 hidden">
-                 <i class="fab fa-reddit text-orange-500 text-7xl animate-bounce"></i>
+                 <i class="fas fa-paw text-orange-500 text-7xl animate-bounce"></i>
             </div>
 
             <!-- Error Message -->
@@ -300,7 +300,7 @@
 
             async function fetchSuggestions(query) {
                 const API_URL = `https://www.reddit.com/api/subreddit_autocomplete_v2.json?query=${encodeURIComponent(query)}&include_profiles=false&limit=5`;
-                const response = await fetch(API_URL, { headers: { 'User-agent': 'ReddSearch 1.0' } });
+                const response = await fetch(API_URL, { headers: { 'User-agent': 'RabbitSearch 1.0' } });
                 if (!response.ok) return [];
                 const data = await response.json();
                 return data?.data?.children?.map(c => c.data) || [];
@@ -384,7 +384,7 @@
             async function fetchReddit(query, sort) {
                 const effectiveSort = sort === 'oldest' ? 'new' : sort;
                 const API_URL = `https://www.reddit.com/search.json?q=${encodeURIComponent(query)}&limit=100&sort=${effectiveSort}`;
-                const response = await fetch(API_URL, { headers: { 'User-agent': 'ReddSearch 1.0' } });
+                const response = await fetch(API_URL, { headers: { 'User-agent': 'RabbitSearch 1.0' } });
                 if (!response.ok) throw new Error(`Reddit API Error: ${response.status} ${response.statusText}`);
                 const data = await response.json();
                 if (!data.data || !data.data.children) return [];
