@@ -27,13 +27,6 @@
             border-bottom: none;
             margin-bottom: 0;
         }
-        .loader {
-            border-top-color: #ff4500; /* Reddit Orange */
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
         .search-type-toggle.active {
             background-color: #ff4500;
             color: white;
@@ -150,8 +143,7 @@
 
             <!-- Loading Spinner -->
             <div id="loader" class="text-center py-10 hidden">
-                 <div class="loader ease-linear rounded-full border-8 border-t-8 border-slate-200 h-32 w-32 mx-auto"></div>
-                 <p class="mt-4 text-lg">Searching Reddit...</p>
+                 <i class="fab fa-reddit text-orange-500 text-7xl animate-bounce"></i>
             </div>
 
             <!-- Error Message -->
