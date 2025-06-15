@@ -389,15 +389,16 @@
                 const data = await response.json();
                 if (!data.data || !data.data.children) return [];
 
+                // FIX: Added default values to prevent crash on inconsistent data
                 return data.data.children.map(({ data: item }) => ({
-                    title: item.title,
-                    url: `https://www.reddit.com${item.permalink}`,
-                    description: item.selftext,
-                    timestamp: new Date(item.created_utc * 1000),
-                    score: item.score,
-                    comments: item.num_comments,
-                    subreddit: item.subreddit_name_prefixed,
-                    author: item.author,
+                    title: item.title || 'Untitled Post',
+                    url: item.permalink ? `https://www.reddit.com${item.permalink}` : '#',
+                    description: item.selftext || '',
+                    timestamp: new Date((item.created_utc || 0) * 1000),
+                    score: item.score || 0,
+                    comments: item.num_comments || 0,
+                    subreddit: item.subreddit_name_prefixed || 'r/unknown',
+                    author: item.author || '[deleted]',
                     image_url: item.url_overridden_by_dest,
                     post_hint: item.post_hint
                 }));
