@@ -14,10 +14,6 @@
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        .dark body {
-            background-color: #020617;
         }
         #main-container {
             width: 100vw;
@@ -66,9 +62,25 @@
             -webkit-backdrop-filter: blur(12px);
             backdrop-filter: blur(12px);
         }
+        /* Animated Gradient Background */
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .animated-gradient {
+            background: linear-gradient(-45deg, #fde68a, #f9a8d4, #818cf8, #60a5fa);
+            background-size: 400% 400%;
+            animation: gradient-animation 15s ease infinite;
+        }
+        .dark .animated-gradient {
+             background: linear-gradient(-45deg, #1e3a8a, #4c1d95, #5b21b6, #1e293b);
+             background-size: 400% 400%;
+             animation: gradient-animation 15s ease infinite;
+        }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
 
     <!-- Header with smaller search bar (initially hidden) -->
     <header id="header" class="hidden sticky top-0 z-40 bg-white/80 dark:bg-slate-800/80 shadow-md p-2 frosted-glass">
@@ -116,31 +128,43 @@
 
     <div id="main-container" class="min-h-screen">
         <!-- Hero Search Container (initially visible) -->
-        <div id="hero-search-container" class="flex items-center justify-center min-h-screen">
-             <div class="w-full max-w-2xl px-4">
-                <div class="text-center mb-8">
-                    <h1 class="text-4xl md:text-5xl font-bold text-slate-800 dark:text-white flex items-center justify-center gap-3">
-                        <i class="fas fa-paw text-orange-500"></i> Rabbit
-                    </h1>
-                </div>
-                <div class="relative">
-                    <div class="relative bg-white dark:bg-slate-800 rounded-full shadow-lg">
-                        <input type="text" id="hero-search-input" placeholder="Search Reddit..." class="w-full h-16 pl-6 pr-20 rounded-full text-lg bg-transparent focus:outline-none text-slate-700 dark:text-slate-300" autocomplete="off">
-                        <button id="hero-search-button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-14 h-14 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
-                            <i class="fas fa-search text-xl"></i>
-                        </button>
+        <div id="hero-search-container" class="flex flex-col items-center justify-center min-h-screen animated-gradient p-4">
+             <div class="w-full max-w-2xl text-center">
+                 <!-- Main Card -->
+                <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-6 sm:p-10 rounded-2xl shadow-2xl ring-1 ring-black ring-opacity-5">
+                    <div class="flex items-center justify-center gap-3 mb-6">
+                         <i class="fas fa-paw text-orange-500 text-5xl sm:text-6xl animate-pulse"></i>
+                         <h1 class="text-5xl sm:text-6xl font-bold text-slate-800 dark:text-white">Rabbit</h1>
                     </div>
-                    <div id="hero-suggestions-container" class="hidden absolute w-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg z-10 overflow-hidden">
-                        <ul id="hero-suggestions-list"></ul>
+                
+                    <div class="relative">
+                        <div class="relative">
+                            <input type="text" id="hero-search-input" placeholder="Go down the rabbit hole..." class="w-full h-16 pl-6 pr-20 rounded-full text-lg bg-white/80 dark:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-700 dark:text-slate-200 shadow-inner" autocomplete="off">
+                            <button id="hero-search-button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-full w-14 h-14 flex items-center justify-center transition-transform duration-200 transform active:scale-95">
+                                <i class="fas fa-search text-xl"></i>
+                            </button>
+                        </div>
+                        <div id="hero-suggestions-container" class="hidden absolute w-full mt-2 bg-white dark:bg-slate-800 rounded-lg shadow-lg z-10 overflow-hidden text-left">
+                            <ul id="hero-suggestions-list"></ul>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center gap-2 mt-4">
+                        <div class="flex items-center border border-slate-300 dark:border-slate-600 rounded-full p-1 bg-white/50 dark:bg-slate-800/50">
+                            <button id="hero-search-type-all" class="search-type-toggle px-5 py-2 rounded-full text-md">Text</button>
+                            <button id="hero-search-type-images" class="search-type-toggle px-5 py-2 rounded-full text-md">Images</button>
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-center gap-4 mt-4">
-                    <div class="flex items-center border border-slate-300 dark:border-slate-600 rounded-full p-1">
-                        <button id="hero-search-type-all" class="search-type-toggle px-5 py-2 rounded-full text-lg">Text</button>
-                        <button id="hero-search-type-images" class="search-type-toggle px-5 py-2 rounded-full text-lg">Images</button>
-                    </div>
+
+                <!-- Example Searches -->
+                <div class="mt-8 text-slate-600 dark:text-slate-400">
+                    <span class="font-medium">Try:</span>
+                    <a href="#" class="example-search hover:underline bg-slate-200/70 dark:bg-slate-700/50 px-3 py-1 rounded-full text-sm">funny animals</a>
+                    <a href="#" class="example-search hover:underline bg-slate-200/70 dark:bg-slate-700/50 px-3 py-1 rounded-full text-sm">space</a>
+                    <a href="#" class="example-search hover:underline bg-slate-200/70 dark:bg-slate-700/50 px-3 py-1 rounded-full text-sm">tech news</a>
                 </div>
-            </div>
+             </div>
         </div>
 
         <!-- Results Container -->
@@ -243,6 +267,13 @@
             filterToggleButton.addEventListener('click', () => {
                 expandableFilters.classList.toggle('hidden');
             });
+             document.querySelectorAll('.example-search').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    heroSearchInput.value = e.target.textContent;
+                    handleSearch(heroSearchInput.value);
+                });
+            });
 
              // --- SEARCH TYPE TOGGLE LOGIC ---
             function updateSearchTypeToggles() {
@@ -341,6 +372,16 @@
                 topSuggestionsContainer.classList.add('hidden');
                 performSearch(trimmedQuery);
             }
+            
+            function buildAdvancedQuery(query) {
+                const trimmedQuery = query.trim();
+                const hasOperator = /author:|subreddit:|selftext:|title:/.test(trimmedQuery);
+
+                if (hasOperator) {
+                    return trimmedQuery;
+                }
+                return `(title:"${trimmedQuery}" OR selftext:"${trimmedQuery}")`;
+            }
 
             // --- API FETCHING ---
             async function performSearch(query) {
@@ -357,9 +398,10 @@
                 
                 const sort = sortFilter.value;
                 const startTime = performance.now();
+                const advancedQuery = buildAdvancedQuery(query);
                 
                 try {
-                    let results = await fetchReddit(query, sort);
+                    let results = await fetchReddit(advancedQuery, sort);
                     let finalResults = results;
 
                     if (searchType === 'images') {
@@ -368,7 +410,7 @@
                     
                     const endTime = performance.now();
                     const searchTime = ((endTime - startTime) / 1000).toFixed(2);
-                    resultsStats.textContent = `${finalResults.length.toLocaleString()} results found in ${searchTime} seconds.`;
+                    resultsStats.textContent = `${finalResults.length.toLocaleString()} results found for "${query}" in ${searchTime} seconds.`;
                     
                     if (finalResults.length === 0) {
                         noResults.classList.remove('hidden');
